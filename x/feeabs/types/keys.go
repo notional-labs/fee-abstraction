@@ -1,9 +1,5 @@
 package types
 
-import (
-	"strings"
-)
-
 const (
 	// Module name store the name of the module
 	ModuleName = "feeabs"
@@ -32,9 +28,8 @@ func GetNativeTokenExchangeRateKey() (key []byte) {
 
 // GetIbcTokenFeeExchangeRateKey return the ibc-token exchange rate key prefix
 func GetIbcTokenFeeExchangeRateKey(denom string) (key []byte) {
-	upperDenom := strings.ToUpper(denom)
 	key = append(key, IbcTokenExchangeRateKeyPrefix...)
-	key = append(key, []byte(upperDenom)...)
+	key = append(key, []byte(denom)...)
 	key = append(key, []byte(KeySeparator)...)
 	return key
 }
