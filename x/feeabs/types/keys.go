@@ -15,10 +15,10 @@ const (
 )
 
 var (
-	OsmosisFeeRate = []byte{0x01} // Key for fee rate of ibc osmosis token
+	OsmosisExchangeRate = []byte{0x01} // Key for the exchange rate of osmosis (to native token)
 )
 
-// GetNativeTokenExchangeRateKey return the native-token exchange rate key prefix
-func GetOsmosisFeeRateKey() (key []byte) {
-	return OsmosisFeeRate
+// GetOsmosisExchangeRateKey return the key for set/getting the exchange rate of osmosis (to native token)
+func GetOsmosisExchangeRateKey() (key []byte) {
+	return OsmosisExchangeRate
 }
