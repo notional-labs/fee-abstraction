@@ -23,13 +23,15 @@ var (
 	IbcTokenExchangeRateKeyPrefix    = []byte{0x02} // Key prefix for ibc token exchange rate
 )
 
+// GetNativeTokenExchangeRateKey return the native-token exchange rate key prefix
 func GetNativeTokenExchangeRateKey() (key []byte) {
 	key = append(key, NativeTokenExchangeRateKeyPrefix...)
 	key = append(key, []byte(KeySeparator)...)
 	return key
 }
 
-func GetIbcTokenExchangeRateKey(denom string) (key []byte) {
+// GetIbcTokenFeeExchangeRateKey return the ibc-token exchange rate key prefix
+func GetIbcTokenFeeExchangeRateKey(denom string) (key []byte) {
 	upperDenom := strings.ToUpper(denom)
 	key = append(key, IbcTokenExchangeRateKeyPrefix...)
 	key = append(key, []byte(upperDenom)...)
