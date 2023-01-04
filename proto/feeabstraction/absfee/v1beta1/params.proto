@@ -22,10 +22,10 @@ message Params {
     // contract on osmosis with custom ibc logic for fetching spot price
     string osmosis_query_contract = 3;
 
-    // we'll update the fee rate each `fee_rate_update_period`
-    google.protobuf.Duration fee_rate_update_period = 4 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
+    // we'll update the fee rate each `osmosis_exchange_rate_update_period`
+    google.protobuf.Duration osmosis_exchange_rate_update_period = 4 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
     
-    // we'll swap our accumulated ibc fee to native token each `accumulated_fee_swap_period` 
-    google.protobuf.Duration accumulated_fee_swap_period = 5 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
+    // we'll swap our accumulated osmosis fee to native token each `accumulated_osmosis_fee_swap_period` 
+    google.protobuf.Duration accumulated_osmosis_fee_swap_period = 5 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
 }
   

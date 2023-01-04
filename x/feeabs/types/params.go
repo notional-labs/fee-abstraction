@@ -19,11 +19,11 @@ const (
 
 // Parameter keys store keys.
 var (
-	KeyOsmosisIbcDenom          = []byte("osmosis_ibc_denom")
-	KeyOsmosisIbcConnectionId   = []byte("osmosis_ibc_connection_id")
-	KeyOsmosisQueryContract     = []byte("osmosis_query_contract")
-	KeyFeeRateUpdatePeriod      = []byte("fee_rate_update_period")
-	KeyAccumulatedFeeSwapPeriod = []byte("accumulated_fee_swap_period")
+	KeyOsmosisIbcDenom                 = []byte("osmosis_ibc_denom")
+	KeyOsmosisIbcConnectionId          = []byte("osmosis_ibc_connection_id")
+	KeyOsmosisQueryContract            = []byte("osmosis_query_contract")
+	KeyOsmosisExchangeRateUpdatePeriod = []byte("osmosis_exchange_rate_update_period")
+	KeyAccumulatedOsmosisFeeSwapPeriod = []byte("accumulated_osmosis_fee_swap_period")
 
 	_ paramtypes.ParamSet = &Params{}
 )
@@ -39,8 +39,8 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyOsmosisIbcDenom, &p.OsmosisIbcDenom, validateOsmosisIbcDenom),
 		paramtypes.NewParamSetPair(KeyOsmosisIbcConnectionId, &p.OsmosisIbcConnectionId, validateIbcConnectionId),
 		paramtypes.NewParamSetPair(KeyOsmosisQueryContract, &p.OsmosisQueryContract, validateOsmosisQueryContract),
-		paramtypes.NewParamSetPair(KeyFeeRateUpdatePeriod, &p.FeeRateUpdatePeriod, noOp),
-		paramtypes.NewParamSetPair(KeyAccumulatedFeeSwapPeriod, &p.AccumulatedFeeSwapPeriod, noOp),
+		paramtypes.NewParamSetPair(KeyOsmosisExchangeRateUpdatePeriod, &p.OsmosisExchangeRateUpdatePeriod, noOp),
+		paramtypes.NewParamSetPair(KeyAccumulatedOsmosisFeeSwapPeriod, &p.AccumulatedOsmosisFeeSwapPeriod, noOp),
 	}
 }
 
