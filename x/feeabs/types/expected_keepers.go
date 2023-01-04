@@ -27,6 +27,12 @@ type FeegrantKeeper interface {
 	UseGrantedFees(ctx sdk.Context, granter, grantee sdk.AccAddress, fee sdk.Coins, msgs []sdk.Msg) error
 }
 
+// StakingKeeper defines the expected interface to get staking denom
+type StakingKeeper interface {
+	// BondDenom - Bondable coin denomination
+	BondDenom(ctx sdk.Context) (res string)
+}
+
 // ClientKeeper defines the expected IBC client keeper.
 type ClientKeeper interface {
 	GetClientConsensusState(ctx sdk.Context, clientID string) (connection ibcexported.ConsensusState, found bool)

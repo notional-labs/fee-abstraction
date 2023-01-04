@@ -1,10 +1,13 @@
 package keeper
 
 import (
+	"errors"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
+
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/types"
 )
 
@@ -13,6 +16,7 @@ type Keeper struct {
 	storeKey       sdk.StoreKey
 	memKey         sdk.StoreKey
 	paramstore     paramtypes.Subspace
+	stakingKeeper  types.StakingKeeper
 	transferKeeper ibctransferkeeper.Keeper
 
 	// ibc keeper
@@ -27,16 +31,36 @@ func (k Keeper) GetModuleAddress() sdk.AccAddress {
 }
 
 // need to implement
-func (k Keeper) CalculateNativeFromIBCCoin(ibcCoin sdk.Coins) (coins sdk.Coins, err error) {
-	err = k.verifyIBCCoin(ibcCoin)
+func (k Keeper) CalculateNativeFromIBCCoin(ctx sdk.Context, ibcCoin sdk.Coin) (sdk.Coin, error) {
+	// verify if ibcCoin not valid
+	err := k.verifyIBCCoin(ctx, ibcCoin)
 	if err != nil {
-		return sdk.Coins{}, nil
+		return sdk.Coin{}, err
 	}
-	return coins, nil
+
+	// Calculate native token amount to swap for ibcCoin
+	coinExchangeRate, err := k.GetIbcTokenFeeExchangeRate(ctx, ibcCoin.Denom)
+	if err != nil {
+		return sdk.Coin{}, err
+	}
+	nativeCoinAmount := coinExchangeRate.MulInt(ibcCoin.Amount)
+
+	nativeCoin := sdk.Coin{
+		Denom:  k.stakingKeeper.BondDenom(ctx),
+		Amount: nativeCoinAmount.RoundInt(),
+	}
+
+	return nativeCoin, nil
 }
 
 // TODO : need to implement
 // return err if IBC token isn't in allowed_list
-func (k Keeper) verifyIBCCoin(ibcCoin sdk.Coins) error {
+func (k Keeper) verifyIBCCoin(ctx sdk.Context, ibcCoin sdk.Coin) error {
+	// Get param
+	params := k.GetParams(ctx)
+	// Check if ibcCoin not valid
+	if ibcCoin.Denom != params.AllowedIbcToken {
+		return errors.New("Ibc token not allowed")
+	}
 	return nil
 }
