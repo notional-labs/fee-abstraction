@@ -31,19 +31,13 @@ func (k Keeper) GetModuleAddress() sdk.AccAddress {
 }
 
 // need to implement
-func (k Keeper) CalculateNativeFromIBCCoin(ctx sdk.Context, ibcCoin sdk.Coin) (sdk.Coin, error) {
-	// verify if ibcCoin not valid
-	err := k.verifyIBCCoin(ctx, ibcCoin)
+func (k Keeper) CalculateNativeFromOsmosis(ctx sdk.Context, osmosisAmount sdk.Int) (sdk.Coin, error) {
+	// Calculate native token amount to swap for osmosisAmount
+	osmosisExchangeRate, err := k.GetOsmosisExchangeRate(ctx)
 	if err != nil {
 		return sdk.Coin{}, err
 	}
-
-	// Calculate native token amount to swap for ibcCoin
-	coinExchangeRate, err := k.GetIbcTokenFeeExchangeRate(ctx, ibcCoin.Denom)
-	if err != nil {
-		return sdk.Coin{}, err
-	}
-	nativeCoinAmount := coinExchangeRate.MulInt(ibcCoin.Amount)
+	nativeCoinAmount := osmosisExchangeRate.MulInt(osmosisAmount)
 
 	nativeCoin := sdk.Coin{
 		Denom:  k.stakingKeeper.BondDenom(ctx),
