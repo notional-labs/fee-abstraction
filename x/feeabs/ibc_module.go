@@ -21,6 +21,14 @@ type IBCModule struct {
 	keeper keeper.Keeper
 }
 
+// NewIBCModule creates a new IBCModule given the keeper
+func NewIBCModule(cdc codec.Codec, k keeper.Keeper) IBCModule {
+	return IBCModule{
+		cdc:    cdc,
+		keeper: k,
+	}
+}
+
 func ValidateChannelParams(
 	ctx sdk.Context,
 	keeper keeper.Keeper,

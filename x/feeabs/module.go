@@ -123,7 +123,7 @@ func (am AppModule) Route() sdk.Route {
 
 // QueryRouter return feeabs module query routing key
 // TODO: implement
-func (AppModule) QueryRouter() string {
+func (AppModule) QuerierRoute() string {
 	return ""
 }
 
