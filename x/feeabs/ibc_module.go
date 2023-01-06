@@ -71,6 +71,12 @@ func ValidateChannelParams(
 		return sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid port: %s, expected %s", portID, boundPort)
 	}
 
+	// Require channelID is the channelID profiles module is bound to
+	boundChannel := keeper.GetChannelId(ctx)
+	if boundChannel != channelID {
+		return sdkerrors.Wrapf(channeltypes.ErrInvalidChannel, "invalid chanel: %s, expected %s", channelID, boundChannel)
+	}
+
 	return nil
 }
 
