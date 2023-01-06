@@ -25,23 +25,26 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // TODO : add more details for this message
-type SwapAmountInRoute struct {
-	PoolId        uint64 `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
-	TokenOutDenom string `protobuf:"bytes,2,opt,name=token_out_denom,json=tokenOutDenom,proto3" json:"token_out_denom,omitempty"`
+type OsmosisQuerySpotPriceRequestPacketData struct {
+	PoolId          uint64 `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty" yaml:"pool_id"`
+	BaseAssetDenom  string `protobuf:"bytes,2,opt,name=base_asset_denom,json=baseAssetDenom,proto3" json:"base_asset_denom,omitempty" yaml:"base_asset_denom"`
+	QuoteAssetDenom string `protobuf:"bytes,3,opt,name=quote_asset_denom,json=quoteAssetDenom,proto3" json:"quote_asset_denom,omitempty" yaml:"quote_asset_denom"`
 }
 
-func (m *SwapAmountInRoute) Reset()         { *m = SwapAmountInRoute{} }
-func (m *SwapAmountInRoute) String() string { return proto.CompactTextString(m) }
-func (*SwapAmountInRoute) ProtoMessage()    {}
-func (*SwapAmountInRoute) Descriptor() ([]byte, []int) {
+func (m *OsmosisQuerySpotPriceRequestPacketData) Reset() {
+	*m = OsmosisQuerySpotPriceRequestPacketData{}
+}
+func (m *OsmosisQuerySpotPriceRequestPacketData) String() string { return proto.CompactTextString(m) }
+func (*OsmosisQuerySpotPriceRequestPacketData) ProtoMessage()    {}
+func (*OsmosisQuerySpotPriceRequestPacketData) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d7e956854d14a746, []int{0}
 }
-func (m *SwapAmountInRoute) XXX_Unmarshal(b []byte) error {
+func (m *OsmosisQuerySpotPriceRequestPacketData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *SwapAmountInRoute) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *OsmosisQuerySpotPriceRequestPacketData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_SwapAmountInRoute.Marshal(b, m, deterministic)
+		return xxx_messageInfo_OsmosisQuerySpotPriceRequestPacketData.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -51,96 +54,41 @@ func (m *SwapAmountInRoute) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-func (m *SwapAmountInRoute) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SwapAmountInRoute.Merge(m, src)
+func (m *OsmosisQuerySpotPriceRequestPacketData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OsmosisQuerySpotPriceRequestPacketData.Merge(m, src)
 }
-func (m *SwapAmountInRoute) XXX_Size() int {
+func (m *OsmosisQuerySpotPriceRequestPacketData) XXX_Size() int {
 	return m.Size()
 }
-func (m *SwapAmountInRoute) XXX_DiscardUnknown() {
-	xxx_messageInfo_SwapAmountInRoute.DiscardUnknown(m)
+func (m *OsmosisQuerySpotPriceRequestPacketData) XXX_DiscardUnknown() {
+	xxx_messageInfo_OsmosisQuerySpotPriceRequestPacketData.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_SwapAmountInRoute proto.InternalMessageInfo
+var xxx_messageInfo_OsmosisQuerySpotPriceRequestPacketData proto.InternalMessageInfo
 
-func (m *SwapAmountInRoute) GetPoolId() uint64 {
+func (m *OsmosisQuerySpotPriceRequestPacketData) GetPoolId() uint64 {
 	if m != nil {
 		return m.PoolId
 	}
 	return 0
 }
 
-func (m *SwapAmountInRoute) GetTokenOutDenom() string {
+func (m *OsmosisQuerySpotPriceRequestPacketData) GetBaseAssetDenom() string {
 	if m != nil {
-		return m.TokenOutDenom
+		return m.BaseAssetDenom
 	}
 	return ""
 }
 
-// TODO : add more details for this message
-type OsmosisQueryRequestPacketData struct {
-	PoolId  uint64              `protobuf:"varint,1,opt,name=pool_id,json=poolId,proto3" json:"pool_id,omitempty"`
-	TokenIn string              `protobuf:"bytes,2,opt,name=token_in,json=tokenIn,proto3" json:"token_in,omitempty"`
-	Routes  []SwapAmountInRoute `protobuf:"bytes,3,rep,name=routes,proto3" json:"routes"`
-}
-
-func (m *OsmosisQueryRequestPacketData) Reset()         { *m = OsmosisQueryRequestPacketData{} }
-func (m *OsmosisQueryRequestPacketData) String() string { return proto.CompactTextString(m) }
-func (*OsmosisQueryRequestPacketData) ProtoMessage()    {}
-func (*OsmosisQueryRequestPacketData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d7e956854d14a746, []int{1}
-}
-func (m *OsmosisQueryRequestPacketData) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *OsmosisQueryRequestPacketData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_OsmosisQueryRequestPacketData.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *OsmosisQueryRequestPacketData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_OsmosisQueryRequestPacketData.Merge(m, src)
-}
-func (m *OsmosisQueryRequestPacketData) XXX_Size() int {
-	return m.Size()
-}
-func (m *OsmosisQueryRequestPacketData) XXX_DiscardUnknown() {
-	xxx_messageInfo_OsmosisQueryRequestPacketData.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_OsmosisQueryRequestPacketData proto.InternalMessageInfo
-
-func (m *OsmosisQueryRequestPacketData) GetPoolId() uint64 {
+func (m *OsmosisQuerySpotPriceRequestPacketData) GetQuoteAssetDenom() string {
 	if m != nil {
-		return m.PoolId
-	}
-	return 0
-}
-
-func (m *OsmosisQueryRequestPacketData) GetTokenIn() string {
-	if m != nil {
-		return m.TokenIn
+		return m.QuoteAssetDenom
 	}
 	return ""
-}
-
-func (m *OsmosisQueryRequestPacketData) GetRoutes() []SwapAmountInRoute {
-	if m != nil {
-		return m.Routes
-	}
-	return nil
 }
 
 func init() {
-	proto.RegisterType((*SwapAmountInRoute)(nil), "feeabstraction.absfee.v1beta1.SwapAmountInRoute")
-	proto.RegisterType((*OsmosisQueryRequestPacketData)(nil), "feeabstraction.absfee.v1beta1.OsmosisQueryRequestPacketData")
+	proto.RegisterType((*OsmosisQuerySpotPriceRequestPacketData)(nil), "feeabstraction.absfee.v1beta1.OsmosisQuerySpotPriceRequestPacketData")
 }
 
 func init() {
@@ -148,32 +96,31 @@ func init() {
 }
 
 var fileDescriptor_d7e956854d14a746 = []byte{
-	// 340 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x91, 0xcf, 0x4e, 0xea, 0x40,
-	0x14, 0xc6, 0xdb, 0x0b, 0x81, 0x7b, 0x7b, 0x73, 0x73, 0x63, 0x63, 0x22, 0x12, 0xa9, 0x84, 0x85,
-	0x61, 0x63, 0x47, 0x74, 0xe5, 0x52, 0xc2, 0x86, 0x8d, 0x68, 0x71, 0xe5, 0x86, 0x4c, 0xcb, 0xa1,
-	0x4e, 0x68, 0xe7, 0xd4, 0xce, 0x19, 0x94, 0xb7, 0xf0, 0x1d, 0x7c, 0x19, 0x96, 0x2c, 0x5d, 0x19,
-	0x03, 0x2f, 0x62, 0xfa, 0x67, 0xa3, 0x46, 0x77, 0x73, 0xbe, 0xf9, 0x9d, 0xef, 0x9c, 0xf9, 0xc6,
-	0x72, 0x67, 0x00, 0xdc, 0x57, 0x94, 0xf2, 0x80, 0x04, 0x4a, 0xc6, 0x7d, 0x35, 0x03, 0x60, 0x8b,
-	0x9e, 0x0f, 0xc4, 0x7b, 0x0c, 0x55, 0x8c, 0x4a, 0x28, 0xe1, 0x07, 0x6e, 0x92, 0x22, 0xa1, 0xdd,
-	0xfa, 0xc8, 0xbb, 0x05, 0xef, 0x96, 0x7c, 0x73, 0x37, 0xc4, 0x10, 0x73, 0x92, 0x65, 0xa7, 0xa2,
-	0xa9, 0x79, 0x10, 0x22, 0x86, 0x11, 0x30, 0x9e, 0x08, 0xc6, 0xa5, 0x44, 0xe2, 0x59, 0xaf, 0x2a,
-	0x6e, 0x3b, 0x37, 0xd6, 0xce, 0xf8, 0x81, 0x27, 0x17, 0x31, 0x6a, 0x49, 0x43, 0xe9, 0xa1, 0x26,
-	0xb0, 0xf7, 0xac, 0x7a, 0x82, 0x18, 0x4d, 0xc4, 0xb4, 0x61, 0xb6, 0xcd, 0x6e, 0xd5, 0xab, 0x65,
-	0xe5, 0x70, 0x6a, 0x1f, 0x59, 0xff, 0x09, 0xe7, 0x20, 0x27, 0xa8, 0x69, 0x32, 0x05, 0x89, 0x71,
-	0xe3, 0x57, 0xdb, 0xec, 0xfe, 0xf1, 0xfe, 0xe5, 0xf2, 0x48, 0xd3, 0x20, 0x13, 0x3b, 0xcf, 0xa6,
-	0xd5, 0x1a, 0x15, 0xdb, 0x5f, 0x6b, 0x48, 0x97, 0x1e, 0xdc, 0x6b, 0x50, 0x74, 0xc5, 0x83, 0x39,
-	0xd0, 0x80, 0x13, 0xff, 0x7e, 0xc4, 0xbe, 0xf5, 0xbb, 0x18, 0x21, 0x64, 0xe9, 0x5d, 0xcf, 0xeb,
-	0xa1, 0xb4, 0x2f, 0xad, 0x5a, 0x9a, 0xed, 0xa7, 0x1a, 0x95, 0x76, 0xa5, 0xfb, 0xf7, 0xf4, 0xc4,
-	0xfd, 0x31, 0x0f, 0xf7, 0xcb, 0xc3, 0xfa, 0xd5, 0xd5, 0xeb, 0xa1, 0xe1, 0x95, 0x2e, 0xfd, 0xf1,
-	0x6a, 0xe3, 0x98, 0xeb, 0x8d, 0x63, 0xbe, 0x6d, 0x1c, 0xf3, 0x69, 0xeb, 0x18, 0xeb, 0xad, 0x63,
-	0xbc, 0x6c, 0x1d, 0xe3, 0xf6, 0x3c, 0x14, 0x74, 0xa7, 0x7d, 0x37, 0xc0, 0x98, 0x49, 0xcc, 0xbc,
-	0x79, 0x74, 0x1c, 0x71, 0x5f, 0xb1, 0x4f, 0x3f, 0xb6, 0xe8, 0xb1, 0xc7, 0x52, 0x63, 0xb4, 0x4c,
-	0x40, 0xf9, 0xb5, 0x3c, 0xd7, 0xb3, 0xf7, 0x00, 0x00, 0x00, 0xff, 0xff, 0x7e, 0x83, 0x1f, 0xa8,
-	0xdc, 0x01, 0x00, 0x00,
+	// 332 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x91, 0xc1, 0x4a, 0xc3, 0x40,
+	0x10, 0x86, 0x1b, 0x95, 0x8a, 0x39, 0x54, 0x0d, 0x82, 0xa5, 0xd6, 0xb4, 0xe4, 0x20, 0x05, 0x31,
+	0x4b, 0xf1, 0xa4, 0x37, 0x4b, 0x05, 0x3d, 0x59, 0xd3, 0x9b, 0x97, 0x32, 0x9b, 0x4e, 0xe3, 0x62,
+	0x92, 0x49, 0xb3, 0x9b, 0x62, 0xdf, 0xc2, 0xc7, 0xf2, 0xd8, 0xa3, 0xa7, 0x22, 0x2d, 0xf8, 0x00,
+	0x7d, 0x02, 0xd9, 0xa4, 0x20, 0xad, 0xb7, 0xe1, 0x9b, 0xef, 0xff, 0x17, 0x66, 0x4d, 0x77, 0x84,
+	0x08, 0x5c, 0xaa, 0x14, 0x7c, 0x25, 0x28, 0x66, 0xc0, 0xe5, 0x08, 0x91, 0x4d, 0xda, 0x1c, 0x15,
+	0xb4, 0x19, 0xc9, 0x88, 0xa4, 0x90, 0x82, 0xfb, 0x6e, 0x92, 0x92, 0x22, 0xeb, 0x7c, 0xd3, 0x77,
+	0x0b, 0xdf, 0x5d, 0xfb, 0xb5, 0x93, 0x80, 0x02, 0xca, 0x4d, 0xa6, 0xa7, 0x22, 0x54, 0xab, 0x07,
+	0x44, 0x41, 0x88, 0x0c, 0x12, 0xc1, 0x20, 0x8e, 0x49, 0x81, 0xce, 0xca, 0x62, 0xeb, 0xfc, 0x18,
+	0xe6, 0xc5, 0x53, 0xf1, 0xce, 0x73, 0x86, 0xe9, 0xb4, 0x9f, 0x90, 0xea, 0xa5, 0xc2, 0x47, 0x0f,
+	0xc7, 0x19, 0x4a, 0xd5, 0x03, 0xff, 0x0d, 0x55, 0x17, 0x14, 0x58, 0x97, 0xe6, 0x7e, 0x42, 0x14,
+	0x0e, 0xc4, 0xb0, 0x6a, 0x34, 0x8d, 0xd6, 0x5e, 0xc7, 0x5a, 0xcd, 0x1b, 0x95, 0x29, 0x44, 0xe1,
+	0xad, 0xb3, 0x5e, 0x38, 0x5e, 0x59, 0x4f, 0x8f, 0x43, 0xeb, 0xde, 0x3c, 0xe2, 0x20, 0x71, 0x00,
+	0x52, 0xa2, 0x1a, 0x0c, 0x31, 0xa6, 0xa8, 0xba, 0xd3, 0x34, 0x5a, 0x07, 0x9d, 0xb3, 0xd5, 0xbc,
+	0x71, 0x5a, 0xa4, 0xb6, 0x0d, 0xc7, 0xab, 0x68, 0x74, 0xa7, 0x49, 0x57, 0x03, 0xeb, 0xc1, 0x3c,
+	0x1e, 0x67, 0xa4, 0x36, 0x7b, 0x76, 0xf3, 0x9e, 0xfa, 0x6a, 0xde, 0xa8, 0x16, 0x3d, 0xff, 0x14,
+	0xc7, 0x3b, 0xcc, 0xd9, 0x5f, 0x53, 0xa7, 0xff, 0xb9, 0xb0, 0x8d, 0xd9, 0xc2, 0x36, 0xbe, 0x17,
+	0xb6, 0xf1, 0xb1, 0xb4, 0x4b, 0xb3, 0xa5, 0x5d, 0xfa, 0x5a, 0xda, 0xa5, 0x97, 0x9b, 0x40, 0xa8,
+	0xd7, 0x8c, 0xbb, 0x3e, 0x45, 0x2c, 0x26, 0x7d, 0x1c, 0x08, 0xaf, 0x42, 0xe0, 0x92, 0x6d, 0x7d,
+	0xcf, 0xa4, 0xcd, 0xde, 0xd7, 0x8c, 0xa9, 0x69, 0x82, 0x92, 0x97, 0xf3, 0x23, 0x5e, 0xff, 0x06,
+	0x00, 0x00, 0xff, 0xff, 0x0a, 0xca, 0x93, 0xf0, 0xc9, 0x01, 0x00, 0x00,
 }
 
-func (m *SwapAmountInRoute) Marshal() (dAtA []byte, err error) {
+func (m *OsmosisQuerySpotPriceRequestPacketData) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -183,69 +130,27 @@ func (m *SwapAmountInRoute) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *SwapAmountInRoute) MarshalTo(dAtA []byte) (int, error) {
+func (m *OsmosisQuerySpotPriceRequestPacketData) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *SwapAmountInRoute) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *OsmosisQuerySpotPriceRequestPacketData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.TokenOutDenom) > 0 {
-		i -= len(m.TokenOutDenom)
-		copy(dAtA[i:], m.TokenOutDenom)
-		i = encodeVarintOsmosisibc(dAtA, i, uint64(len(m.TokenOutDenom)))
+	if len(m.QuoteAssetDenom) > 0 {
+		i -= len(m.QuoteAssetDenom)
+		copy(dAtA[i:], m.QuoteAssetDenom)
+		i = encodeVarintOsmosisibc(dAtA, i, uint64(len(m.QuoteAssetDenom)))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0x1a
 	}
-	if m.PoolId != 0 {
-		i = encodeVarintOsmosisibc(dAtA, i, uint64(m.PoolId))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *OsmosisQueryRequestPacketData) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *OsmosisQueryRequestPacketData) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *OsmosisQueryRequestPacketData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Routes) > 0 {
-		for iNdEx := len(m.Routes) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Routes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintOsmosisibc(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x1a
-		}
-	}
-	if len(m.TokenIn) > 0 {
-		i -= len(m.TokenIn)
-		copy(dAtA[i:], m.TokenIn)
-		i = encodeVarintOsmosisibc(dAtA, i, uint64(len(m.TokenIn)))
+	if len(m.BaseAssetDenom) > 0 {
+		i -= len(m.BaseAssetDenom)
+		copy(dAtA[i:], m.BaseAssetDenom)
+		i = encodeVarintOsmosisibc(dAtA, i, uint64(len(m.BaseAssetDenom)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -268,7 +173,7 @@ func encodeVarintOsmosisibc(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *SwapAmountInRoute) Size() (n int) {
+func (m *OsmosisQuerySpotPriceRequestPacketData) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -277,31 +182,13 @@ func (m *SwapAmountInRoute) Size() (n int) {
 	if m.PoolId != 0 {
 		n += 1 + sovOsmosisibc(uint64(m.PoolId))
 	}
-	l = len(m.TokenOutDenom)
+	l = len(m.BaseAssetDenom)
 	if l > 0 {
 		n += 1 + l + sovOsmosisibc(uint64(l))
 	}
-	return n
-}
-
-func (m *OsmosisQueryRequestPacketData) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.PoolId != 0 {
-		n += 1 + sovOsmosisibc(uint64(m.PoolId))
-	}
-	l = len(m.TokenIn)
+	l = len(m.QuoteAssetDenom)
 	if l > 0 {
 		n += 1 + l + sovOsmosisibc(uint64(l))
-	}
-	if len(m.Routes) > 0 {
-		for _, e := range m.Routes {
-			l = e.Size()
-			n += 1 + l + sovOsmosisibc(uint64(l))
-		}
 	}
 	return n
 }
@@ -312,7 +199,7 @@ func sovOsmosisibc(x uint64) (n int) {
 func sozOsmosisibc(x uint64) (n int) {
 	return sovOsmosisibc(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *SwapAmountInRoute) Unmarshal(dAtA []byte) error {
+func (m *OsmosisQuerySpotPriceRequestPacketData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -335,10 +222,10 @@ func (m *SwapAmountInRoute) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: SwapAmountInRoute: wiretype end group for non-group")
+			return fmt.Errorf("proto: OsmosisQuerySpotPriceRequestPacketData: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: SwapAmountInRoute: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: OsmosisQuerySpotPriceRequestPacketData: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -362,7 +249,7 @@ func (m *SwapAmountInRoute) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TokenOutDenom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field BaseAssetDenom", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -390,114 +277,13 @@ func (m *SwapAmountInRoute) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.TokenOutDenom = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipOsmosisibc(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthOsmosisibc
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *OsmosisQueryRequestPacketData) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowOsmosisibc
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: OsmosisQueryRequestPacketData: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: OsmosisQueryRequestPacketData: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PoolId", wireType)
-			}
-			m.PoolId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowOsmosisibc
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.PoolId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TokenIn", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowOsmosisibc
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthOsmosisibc
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthOsmosisibc
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.TokenIn = string(dAtA[iNdEx:postIndex])
+			m.BaseAssetDenom = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Routes", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field QuoteAssetDenom", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowOsmosisibc
@@ -507,25 +293,23 @@ func (m *OsmosisQueryRequestPacketData) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthOsmosisibc
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthOsmosisibc
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Routes = append(m.Routes, SwapAmountInRoute{})
-			if err := m.Routes[len(m.Routes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.QuoteAssetDenom = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

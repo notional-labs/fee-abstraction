@@ -33,8 +33,8 @@ func (k Keeper) ClaimCapability(ctx sdk.Context, capability *capabilitytypes.Cap
 }
 
 // Send request for query EstimateSwapExactAmountIn over IBC
-func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, poolId uint64, tokenIn string, routes []types.SwapAmountInRoute, sourcePort, sourceChannel string) error {
-	packetData := types.NewOsmosisQueryRequestPacketData(poolId, tokenIn, routes)
+func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, poolId uint64, baseDenom string, quoteDenom string, sourcePort, sourceChannel string) error {
+	packetData := types.NewOsmosisQueryRequestPacketData(poolId, baseDenom, quoteDenom)
 
 	// Get the next sequence
 	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, sourcePort, sourceChannel)
@@ -75,4 +75,9 @@ func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, poolId uint64, tokenIn 
 
 	// Send the IBC packet
 	return k.channelKeeper.SendPacket(ctx, channelCap, packet)
+}
+
+func (k Keeper) GetChannelId(ctx sdk.Context) string {
+	store := ctx.KVStore(k.storeKey)
+	return string(store.Get(types.KeyChannelID))
 }

@@ -16,15 +16,16 @@ var ModuleCdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 // IBCPortKey defines the key to store the port ID in store.
 var IBCPortKey = []byte{0x01}
 
-func NewOsmosisQueryRequestPacketData(poolId uint64, tokenIn string, routes []SwapAmountInRoute) OsmosisQueryRequestPacketData {
-	return OsmosisQueryRequestPacketData{
-		PoolId:  poolId,
-		TokenIn: tokenIn,
-		Routes:  routes,
+// NewOsmosisQueryRequestPacketData create new packet for ibc.
+func NewOsmosisQueryRequestPacketData(poolId uint64, baseDenom string, quoteDenom string) OsmosisQuerySpotPriceRequestPacketData {
+	return OsmosisQuerySpotPriceRequestPacketData{
+		PoolId:          poolId,
+		BaseAssetDenom:  baseDenom,
+		QuoteAssetDenom: quoteDenom,
 	}
 }
 
 // GetBytes is a helper for serializing.
-func (p OsmosisQueryRequestPacketData) GetBytes() []byte {
+func (p OsmosisQuerySpotPriceRequestPacketData) GetBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&p))
 }
