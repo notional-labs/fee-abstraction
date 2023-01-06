@@ -439,12 +439,18 @@ func NewFeeAbs(
 	icaModule := ica.NewAppModule(nil, &app.ICAHostKeeper)
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 
-	// app.FeeabsKeeper = feeabskeeper.NewKeeper(
-	// 	appCodec,
-	// 	keys[feeabstypes.StoreKey],
-	// 	app.GetSubspace(feeabstypes.ModuleName),
-
-	// )
+	app.FeeabsKeeper = feeabskeeper.NewKeeper(
+		appCodec,
+		keys[feeabstypes.StoreKey],
+		keys[feeabstypes.MemStoreKey], // TODO: Need to re-check, do we need this memKey?
+		app.GetSubspace(feeabstypes.ModuleName),
+		app.TransferKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedFeeabsKeeper,
+	)
+	feeabsModule := feeabsmodule.NewAppModule(appCodec, app.FeeabsKeeper)
+	feeabsIBCModule := feeabsmodule.NewIBCModule(appCodec, app.FeeabsKeeper)
 
 	app.RouterKeeper = routerkeeper.NewKeeper(appCodec, keys[routertypes.StoreKey], app.GetSubspace(routertypes.ModuleName), app.TransferKeeper, app.DistrKeeper)
 
@@ -452,7 +458,8 @@ func NewFeeAbs(
 	// create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
-		AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
+		AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
+		AddRoute(feeabstypes.ModuleName, feeabsIBCModule)
 
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -496,6 +503,7 @@ func NewFeeAbs(
 		liquidity.NewAppModule(appCodec, app.LiquidityKeeper, app.AccountKeeper, app.BankKeeper, app.DistrKeeper),
 		transferModule,
 		icaModule,
+		feeabsModule,
 		routerModule,
 	)
 
@@ -515,6 +523,7 @@ func NewFeeAbs(
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
+		feeabstypes.ModuleName,
 		routertypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -536,6 +545,7 @@ func NewFeeAbs(
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
+		feeabstypes.ModuleName,
 		routertypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
@@ -570,6 +580,7 @@ func NewFeeAbs(
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
+		feeabstypes.ModuleName,
 		evidencetypes.ModuleName,
 		liquiditytypes.ModuleName,
 		feegrant.ModuleName,
@@ -709,6 +720,7 @@ func NewFeeAbs(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
+	app.ScopedFeeabsKeeper = scopedFeeabsKeeper
 
 	return app
 }
