@@ -9,6 +9,6 @@ func DefaultGenesisState() *GenesisState {
 }
 
 // ValidateGenesis validates the genesis state
-func ValidateGenesis(genState *GenesisState) error {
+func (gs GenesisState) ValidateGenesis() error {
 	return nil
 }
