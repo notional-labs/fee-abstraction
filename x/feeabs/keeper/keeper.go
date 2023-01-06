@@ -14,13 +14,11 @@ import (
 type Keeper struct {
 	cdc            codec.BinaryCodec
 	storeKey       sdk.StoreKey
-	memKey         sdk.StoreKey
 	paramstore     paramtypes.Subspace
 	transferKeeper ibctransferkeeper.Keeper
 
 	// ibc keeper
 	channelKeeper types.ChannelKeeper
-	portKeeper    types.PortKeeper
 	scopedKeeper  types.ScopedKeeper
 }
 
