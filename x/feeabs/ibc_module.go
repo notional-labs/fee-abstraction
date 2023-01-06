@@ -29,6 +29,31 @@ func NewIBCModule(cdc codec.Codec, k keeper.Keeper) IBCModule {
 	}
 }
 
+// -------------------------------------------------------------------------------------------------------------------
+
+// OnChanOpenInit implements the IBCModule interface.
+func (am IBCModule) OnChanOpenInit(
+	ctx sdk.Context,
+	order channeltypes.Order,
+	connectionHops []string,
+	portID string,
+	channelID string,
+	channelCap *capabilitytypes.Capability,
+	counterparty channeltypes.Counterparty,
+	version string,
+) error {
+	if err := ValidateChannelParams(ctx, am.keeper, order, portID, channelID); err != nil {
+		return err
+	}
+
+	// Claim channel capability passed back by IBC module
+	if err := am.keeper.ClaimCapability(ctx, channelCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func ValidateChannelParams(
 	ctx sdk.Context,
 	keeper keeper.Keeper,
