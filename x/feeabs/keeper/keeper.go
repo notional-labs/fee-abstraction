@@ -3,12 +3,15 @@ package keeper
 import (
 	"errors"
 
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
 
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/types"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 type Keeper struct {
@@ -57,4 +60,8 @@ func (k Keeper) verifyIBCCoin(ctx sdk.Context, ibcCoin sdk.Coin) error {
 		return errors.New("Ibc token not allowed")
 	}
 	return nil
+}
+
+func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
