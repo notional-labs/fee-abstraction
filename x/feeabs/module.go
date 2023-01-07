@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/notional-labs/feeabstraction/v1/x/feeabs/client/cli"
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/keeper"
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/types"
 	"github.com/spf13/cobra"
@@ -50,7 +51,7 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 // RegisterInterfaces registers the module interface
 // TODO: need to implement
 func (a AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
-
+	types.RegisterInterfaces(reg)
 }
 
 // DefaultGenesis returns feeabs module default genesis state.
@@ -82,7 +83,7 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 // GetTxCmd returns the feeabs module's root tx command.
 // TODO: need to implement
 func (a AppModuleBasic) GetTxCmd() *cobra.Command {
-	return nil
+	return cli.NewTxCmd()
 }
 
 // GetQueryCmd returns the feeabs module's root query command.
@@ -141,6 +142,7 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 // module-specific GRPC queries.
 // TODO: implement
 func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 
 }
 
