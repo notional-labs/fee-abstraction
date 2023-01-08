@@ -16,6 +16,22 @@ func (k Keeper) GetPort(ctx sdk.Context) string {
 	return string(store.Get(types.IBCPortKey))
 }
 
+// DONTCOVER
+// No need to cover this simple methods
+
+// IsBound checks if the module is already bound to the desired port.
+func (k ExpKeeper) IsBound(ctx sdk.Context, portID string) bool {
+	_, ok := k.scopedKeeper.GetCapability(ctx, host.PortPath(portID))
+	return ok
+}
+
+// BindPort defines a wrapper function for the port Keeper's function in
+// order to expose it to module's InitGenesis function.
+func (k Keeper) BindPort(ctx sdk.Context, portID string) error {
+	capability := k.portKeeper.BindPort(ctx, portID)
+	return k.ClaimCapability(ctx, capability, host.PortPath(portID))
+}
+
 // SetPort sets the portID for the module. Used in InitGenesis.
 func (k Keeper) SetPort(ctx sdk.Context, portID string) {
 	store := ctx.KVStore(k.storeKey)

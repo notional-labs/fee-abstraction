@@ -18,6 +18,7 @@ type Keeper struct {
 	transferKeeper ibctransferkeeper.Keeper
 
 	// ibc keeper
+	portKeeper    types.PortKeeper
 	channelKeeper types.ChannelKeeper
 	scopedKeeper  types.ScopedKeeper
 }
@@ -44,6 +45,7 @@ func NewKeeper(
 		transferKeeper: transferKeeper,
 		channelKeeper:  channelKeeper,
 		scopedKeeper:   scopedKeeper,
+		portKeeper:     portKeeper,
 	}
 }
 

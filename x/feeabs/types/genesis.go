@@ -9,9 +9,9 @@ import (
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		Params: &Params{
-			OsmosisIbcDenom: "ibc/",
-			OsmosisIbcConnectionId: "",
-			OsmosisQueryContract: "",
+			OsmosisIbcDenom:                 "ibc/",
+			OsmosisIbcConnectionId:          "",
+			OsmosisQueryContract:            "",
 			OsmosisExchangeRateUpdatePeriod: DefaultQueryPeriod,
 			AccumulatedOsmosisFeeSwapPeriod: DefaultSwapPeriod,
 		},
@@ -29,7 +29,7 @@ func (gs GenesisState) Validate() error {
 	}
 
 	// Validate epochs genesis
-	for _, epoch := range(gs.Epochs) {
+	for _, epoch := range gs.Epochs {
 		err := epoch.Validate()
 		if err != nil {
 			return errors.New("invalid epoch")
