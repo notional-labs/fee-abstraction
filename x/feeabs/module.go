@@ -1,6 +1,7 @@
 package feeabs
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -76,7 +77,10 @@ func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Rout
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
 // TODO: need to implement
-func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
+func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, serveMux *runtime.ServeMux) {
+	if err := types.RegisterQueryHandlerClient(context.Background(), serveMux, types.NewQueryClient(clientCtx)); err != nil {
+		panic(err)
+	}
 }
 
 // GetTxCmd returns the feeabs module's root tx command.
@@ -129,7 +133,7 @@ func (am AppModule) Route() sdk.Route {
 // QueryRouter return feeabs module query routing key
 // TODO: implement
 func (AppModule) QuerierRoute() string {
-	return ""
+	return types.QuerierRoute
 }
 
 // LegacyQuerierHandler returns feeabs legacy querier handler
@@ -141,19 +145,24 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 // module-specific GRPC queries.
 // TODO: implement
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQuerier(am.keeper))
 }
 
 // InitGenesis initial genesis state for feeabs module
 // TODO: implement
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
+	var genesisState types.GenesisState
+	cdc.MustUnmarshalJSON(data, &genesisState)
+	am.keeper.InitGenesis(ctx, genesisState)
+
 	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis export feeabs state as raw message for feeabs module
 // TODO: implement
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	return json.RawMessage{}
+	gs := am.keeper.ExportGenesis(ctx)
+	return cdc.MustMarshalJSON(gs)
 }
 
 // BeginBlock returns the begin blocker for the feeabs module.
