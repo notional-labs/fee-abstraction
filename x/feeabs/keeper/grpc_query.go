@@ -21,6 +21,7 @@ func NewQuerier(k Keeper) Querier {
 	return Querier{Keeper: k}
 }
 
+// OsmosisSpotPrice return spot price of pair Osmo/nativeToken
 func (q Querier) OsmosisSpotPrice(goCtx context.Context, req *types.QueryOsmosisSpotPriceRequest) (*types.QueryOsmosisSpotPriceResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
@@ -40,6 +41,7 @@ func (q Querier) OsmosisSpotPrice(goCtx context.Context, req *types.QueryOsmosis
 	}, nil
 }
 
+// FeeabsModuleBalances return total balances of feeabs module
 func (q Querier) FeeabsModuleBalances(goCtx context.Context, req *types.QueryFeeabsModuleBalacesRequest) (*types.QueryFeeabsModuleBalacesResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")

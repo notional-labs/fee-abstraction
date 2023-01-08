@@ -14,14 +14,15 @@ service Query {
   rpc OsmosisSpotPrice(QueryOsmosisSpotPriceRequest) returns (QueryOsmosisSpotPriceResponse) {
     option (google.api.http).get = "/fee-abstraction/feeabs/v1/osmosis-spot-price";
   }
+  // FeeabsModuleBalances return total balances of feeabs module
   rpc FeeabsModuleBalances(QueryFeeabsModuleBalacesRequest) returns (QueryFeeabsModuleBalacesResponse) {
     option (google.api.http).get = "/fee-abstraction/feeabs/v1/module-balances";
   }
 }
 
+// QueryOsmosisSpotPriceRequest is the request type for the Query/Feeabs RPC method.
 message QueryOsmosisSpotPriceRequest {}
   
-// QueryOsmosisSpotPriceRequest is the request type for the Query/FeeShares RPC method.
 message QueryOsmosisSpotPriceResponse {
     string base_asset = 1;
     string quote_asset = 2;
@@ -32,9 +33,9 @@ message QueryOsmosisSpotPriceResponse {
   ];
 }
 
+// QueryFeeabsModuleBalacesRequest is the request type for the Query/Feeabs RPC method.
 message QueryFeeabsModuleBalacesRequest {}
   
-// QueryOsmosisSpotPriceRequest is the request type for the Query/FeeShares RPC method.
 message QueryFeeabsModuleBalacesResponse {
     repeated cosmos.base.v1beta1.Coin balances = 1 [
       (gogoproto.nullable)     = false,
