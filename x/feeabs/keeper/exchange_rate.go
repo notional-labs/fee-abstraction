@@ -6,14 +6,14 @@ import (
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/types"
 )
 
-// SetOsmosisExchangeRate set osmosis exchange rate (osmosis to native token)
+// SetOsmosisExchangeRate set osmosis exchange rate (Osmo/nativeToken)
 func (k Keeper) SetOsmosisExchangeRate(ctx sdk.Context, osmosisExchangeRate sdk.Dec) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&sdk.DecProto{Dec: osmosisExchangeRate})
 	store.Set(types.GetOsmosisExchangeRateKey(), bz)
 }
 
-// GetOsmosisExchangeRate get osmosis exchange rate (osmosis to native token)
+// GetOsmosisExchangeRate get osmosis exchange rate (Osmo/nativeToken)
 func (k Keeper) GetOsmosisExchangeRate(ctx sdk.Context) (sdk.Dec, error) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.GetOsmosisExchangeRateKey())
