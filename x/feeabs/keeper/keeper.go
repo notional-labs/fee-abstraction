@@ -56,7 +56,6 @@ func NewKeeper(
 	}
 }
 
-// need to implement
 func (k Keeper) GetModuleAddress() sdk.AccAddress {
 	return k.ak.GetModuleAddress(types.ModuleName)
 }

@@ -38,7 +38,7 @@ message QueryFeeabsModuleBalacesRequest {}
 message QueryFeeabsModuleBalacesResponse {
     repeated cosmos.base.v1beta1.Coin balances = 1 [
       (gogoproto.nullable)     = false,
-      (gogoproto.moretags) = "yaml:\"balances\"",
+      (gogoproto.moretags)     = "yaml:\"balances\"",
       (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
     ];
 }
