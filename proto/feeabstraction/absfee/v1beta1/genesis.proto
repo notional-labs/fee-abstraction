@@ -17,6 +17,6 @@ message GenesisState {
 
     repeated EpochInfo epochs = 2 
         [ (gogoproto.nullable) = false ];
-        string port_id = 4;
+        string port_id = 3;
   }
   
