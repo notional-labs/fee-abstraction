@@ -1,0 +1,29 @@
+syntax = "proto3";
+package feeabstraction.absfee.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "feeabstraction/absfee/v1beta1/params.proto";
+
+option go_package = "github.com/notional-labs/feeabstraction/v1/x/feeabs/types";
+
+// Query defines the gRPC querier service.
+service Query {
+    // OsmosisSpotPrice return spot price of pair Osmo/nativeToken
+  rpc OsmosisSpotPrice(QueryOsmosisSpotPriceRequest) returns (QueryOsmosisSpotPriceResponse) {
+    option (google.api.http).get = "/fee-abstraction/feeabs/v1/osmosis-spot-price";
+  }
+}
+
+message QueryOsmosisSpotPriceRequest {}
+  
+// QueryOsmosisSpotPriceRequest is the request type for the Query/FeeShares RPC method.
+message QueryOsmosisSpotPriceResponse {
+    string base_asset = 1;
+    string quote_asset = 2;
+    string spot_price = 3 [
+    (gogoproto.moretags)   = "yaml:\"spot_price\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false
+  ];
+}
