@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"encoding/json"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -20,7 +22,7 @@ func (k Keeper) GetPort(ctx sdk.Context) string {
 // No need to cover this simple methods
 
 // IsBound checks if the module is already bound to the desired port.
-func (k ExpKeeper) IsBound(ctx sdk.Context, portID string) bool {
+func (k Keeper) IsBound(ctx sdk.Context, portID string) bool {
 	_, ok := k.scopedKeeper.GetCapability(ctx, host.PortPath(portID))
 	return ok
 }
@@ -96,4 +98,19 @@ func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, poolId uint64, baseDeno
 func (k Keeper) GetChannelId(ctx sdk.Context) string {
 	store := ctx.KVStore(k.storeKey)
 	return string(store.Get(types.KeyChannelID))
+}
+
+// TODO: need to test this function
+func (k Keeper) UnmarshalPacketBytesToPrice(bz []byte) (sdk.Dec, error) {
+	var spotPrice types.SpotPrice
+	err := json.Unmarshal(bz, &spotPrice)
+	if err != nil {
+		return sdk.Dec{}, sdkerrors.New("ibc ack data umarshal", 1, "error when json.Unmarshal")
+	}
+
+	spotPriceDec, err := sdk.NewDecFromStr(spotPrice.SpotPrice)
+	if err != nil {
+		return sdk.Dec{}, sdkerrors.New("ibc ack data umarshal", 1, "error when NewDecFromStr")
+	}
+	return spotPriceDec, nil
 }
