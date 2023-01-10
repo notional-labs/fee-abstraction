@@ -173,7 +173,7 @@ func (am IBCModule) OnAcknowledgementPacket(
 		return err
 	}
 
-	//set spot price here
+	// set spot price here
 	am.keeper.SetOsmosisExchangeRate(ctx, spotPrice)
 
 	ctx.EventManager().EmitEvent(
@@ -214,6 +214,5 @@ func (am IBCModule) OnTimeoutPacket(
 ) error {
 	// TODO: Resend request if timeout
 	// TODO: emit event
-
 	return nil
 }
