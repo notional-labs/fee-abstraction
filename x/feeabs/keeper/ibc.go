@@ -142,6 +142,7 @@ func (k Keeper) SendIbcSwapAmountInRoute(
 	return k.channelKeeper.SendPacket(ctx, channelCap, packet)
 }
 
+// OnAcknowledgementIbcSwapAmountInRoute handle Acknowledgement for SwapAmountInRoute packet
 func (k Keeper) OnAcknowledgementIbcSwapAmountInRoute(ctx sdk.Context, ack channeltypes.Acknowledgement) error {
 	switch dispatchedAck := ack.Response.(type) {
 	case *channeltypes.Acknowledgement_Error:
