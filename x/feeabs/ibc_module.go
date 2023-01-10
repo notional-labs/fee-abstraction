@@ -165,7 +165,28 @@ func (am IBCModule) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) error {
 	var ack channeltypes.Acknowledgement
+	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet acknowledgement: %v", err)
+	}
 	//TODO: Handler ack logic here
+
+	var feeabsIbcPacketData types.FeeabsIbcPacketData
+	if err := feeabsIbcPacketData.Unmarshal(packet.GetData()); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
+	}
+
+	// Dispatch packet
+	switch packet := feeabsIbcPacketData.Packet.(type) {
+	case *types.FeeabsIbcPacketData_IbcOsmosisQuerySpotPriceRequestPacketData:
+	case *types.FeeabsIbcPacketData_IbcSwapAmountInRoute:
+		err := am.keeper.OnAcknowledgementIbcSwapAmountInRoute(ctx, ack)
+		if err != nil {
+			return err
+		}
+	default:
+		errMsg := fmt.Sprintf("unrecognized %s packet type: %T", types.ModuleName, packet)
+		return sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
+	}
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(

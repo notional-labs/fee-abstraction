@@ -3,7 +3,6 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -26,6 +25,25 @@ func NewOsmosisQueryRequestPacketData(poolId uint64, baseDenom string, quoteDeno
 }
 
 // GetBytes is a helper for serializing.
-func (p OsmosisQuerySpotPriceRequestPacketData) GetBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&p))
+func (p OsmosisQuerySpotPriceRequestPacketData) GetBytes() ([]byte, error) {
+	var ibcPacket FeeabsIbcPacketData
+	ibcPacket.Packet = &FeeabsIbcPacketData_IbcOsmosisQuerySpotPriceRequestPacketData{&p}
+
+	return ibcPacket.Marshal()
+}
+
+// NewSwapAmountInRoutePacketData create new packet for swap token over ibc.
+func NewSwapAmountInRoutePacketData(poolId uint64, tokenOutDenom string) SwapAmountInRoute {
+	return SwapAmountInRoute{
+		PoolId:        poolId,
+		TokenOutDenom: tokenOutDenom,
+	}
+}
+
+// GetBytes is a helper for serializing.
+func (p SwapAmountInRoute) GetBytes() ([]byte, error) {
+	var ibcPacket FeeabsIbcPacketData
+	ibcPacket.Packet = &FeeabsIbcPacketData_IbcSwapAmountInRoute{&p}
+
+	return ibcPacket.Marshal()
 }

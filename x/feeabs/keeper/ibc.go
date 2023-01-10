@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -61,9 +63,14 @@ func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, poolId uint64, baseDeno
 		return sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
 	}
 
+	packetBytes, err := packetData.GetBytes()
+	if err != nil {
+		return sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, "cannot marshal the packet: "+err.Error())
+	}
+
 	// Create the IBC packet
 	packet := channeltypes.NewPacket(
-		packetData.GetBytes(),
+		packetBytes,
 		sequence,
 		sourcePort,
 		sourceChannel,
@@ -75,6 +82,80 @@ func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, poolId uint64, baseDeno
 
 	// Send the IBC packet
 	return k.channelKeeper.SendPacket(ctx, channelCap, packet)
+}
+
+// Send request for swap SwapAmountInRoute over IBC
+func (k Keeper) SendIbcSwapAmountInRoute(
+	ctx sdk.Context,
+	poolId uint64,
+	tokenOutDenom string,
+	sourcePort string,
+	sourceChannel string,
+) error {
+	packetData := types.NewSwapAmountInRoutePacketData(poolId, tokenOutDenom)
+
+	// Get source channel endpoint
+	sourceChannelEnd, found := k.channelKeeper.GetChannel(ctx, sourcePort, sourceChannel)
+	if !found {
+		return sdkerrors.Wrapf(channeltypes.ErrChannelNotFound, "port ID (%s) channel ID (%s)", sourcePort, sourceChannel)
+	}
+
+	// Get counter-party chain endpoint infor
+	destinationPort := sourceChannelEnd.GetCounterparty().GetPortID()
+	destinationChannel := sourceChannelEnd.GetCounterparty().GetChannelID()
+
+	// Get next sequence
+	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, sourcePort, sourceChannel)
+	if !found {
+		return sdkerrors.Wrapf(
+			channeltypes.ErrSequenceSendNotFound,
+			"source port: %s, source channel: %s", sourcePort, sourceChannel,
+		)
+	}
+
+	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(sourcePort, sourceChannel))
+	if !ok {
+		return sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
+	}
+
+	packetBytes, err := packetData.GetBytes()
+	if err != nil {
+		return sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, "cannot marshal the packet: "+err.Error())
+	}
+
+	timeoutHeight := clienttypes.NewHeight(0, 100000000)
+	timeoutTimestamp := uint64(0)
+
+	// Create the IBC packet
+	packet := channeltypes.NewPacket(
+		packetBytes,
+		sequence,
+		sourcePort,
+		sourceChannel,
+		destinationPort,
+		destinationChannel,
+		timeoutHeight,
+		timeoutTimestamp,
+	)
+
+	// Send the IBC packet
+	return k.channelKeeper.SendPacket(ctx, channelCap, packet)
+}
+
+func (k Keeper) OnAcknowledgementIbcSwapAmountInRoute(ctx sdk.Context, ack channeltypes.Acknowledgement) error {
+	switch dispatchedAck := ack.Response.(type) {
+	case *channeltypes.Acknowledgement_Error:
+		_ = dispatchedAck.Error
+		return nil
+	case *channeltypes.Acknowledgement_Result:
+		// Unmarshal dispatchedAck result
+
+		// TODO: implement logic swap success
+		return nil
+	default:
+		// The counter-party module doesn't implement the correct acknowledgment format
+		return errors.New("invalid acknowledgment format")
+	}
 }
 
 func (k Keeper) GetChannelId(ctx sdk.Context) string {
