@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/golang/protobuf/proto" //nolint
+	feeabs "github.com/notional-labs/feeabstraction/v1/app"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/rand"
 )
@@ -68,4 +69,12 @@ func (chain *TestChain) parseSDKResultData(r *sdk.Result) sdk.TxMsgData {
 	var protoResult sdk.TxMsgData
 	require.NoError(chain.t, proto.Unmarshal(r.Data, &protoResult))
 	return protoResult
+}
+
+// ContractInfo is a helper function to returns the ContractInfo for the given contract address
+func (chain *TestChain) ContractInfo(contractAddr sdk.AccAddress) *types.ContractInfo {
+	type testSupporter interface {
+		TestSupport() *feeabs.TestSupport
+	}
+	return chain.App.(testSupporter).TestSupport().WasmKeeper().GetContractInfo(chain.GetContext(), contractAddr)
 }

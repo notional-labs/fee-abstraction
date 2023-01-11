@@ -1,6 +1,7 @@
 package ibctesting
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -10,12 +11,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	"github.com/cosmos/cosmos-sdk/x/staking/teststaking"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	commitmenttypes "github.com/cosmos/ibc-go/v3/modules/core/23-commitment/types"
+	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	"github.com/cosmos/ibc-go/v3/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/cosmos/ibc-go/v3/modules/core/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/07-tendermint/types"
@@ -127,6 +134,41 @@ func NewTestChain(t *testing.T, coord *Coordinator, chainID string, opts ...wasm
 	return chain
 }
 
+// GetContext returns the current context for the application.
+func (chain *TestChain) GetContext() sdk.Context {
+	return chain.App.GetBaseApp().NewContext(false, chain.CurrentHeader)
+}
+
+// QueryProof performs an abci query with the given key and returns the proto encoded merkle proof
+// for the query and the height at which the proof will succeed on a tendermint verifier.
+func (chain *TestChain) QueryProof(key []byte) ([]byte, clienttypes.Height) {
+	return chain.QueryProofAtHeight(key, chain.App.LastBlockHeight())
+}
+
+// QueryProof performs an abci query with the given key and returns the proto encoded merkle proof
+// for the query and the height at which the proof will succeed on a tendermint verifier.
+func (chain *TestChain) QueryProofAtHeight(key []byte, height int64) ([]byte, clienttypes.Height) {
+	res := chain.App.Query(abci.RequestQuery{
+		Path:   fmt.Sprintf("store/%s/key", host.StoreKey),
+		Height: height - 1,
+		Data:   key,
+		Prove:  true,
+	})
+
+	merkleProof, err := commitmenttypes.ConvertProofs(res.ProofOps)
+	require.NoError(chain.t, err)
+
+	proof, err := chain.App.AppCodec().Marshal(&merkleProof)
+	require.NoError(chain.t, err)
+
+	revision := clienttypes.ParseChainID(chain.ChainID)
+
+	// proof height + 1 is returned as the proof created corresponds to the height the proof
+	// was created in the IAVL tree. Tendermint and subsequently the clients that rely on it
+	// have heights 1 above the IAVL tree. Thus we return proof height + 1
+	return proof, clienttypes.NewHeight(revision, uint64(res.Height)+1)
+}
+
 // NextBlock sets the last header to the current header and increments the current header to be
 // at the next block height. It does not update the time as that is handled by the Coordinator.
 //
@@ -164,7 +206,7 @@ func (chain *TestChain) SendMsgs(msgs ...sdk.Msg) (*sdk.Result, error) {
 	// ensure the chain has the latest time
 	chain.Coordinator.UpdateTimeForChain(chain)
 
-	_, r, err := wasmd.SignAndDeliver(
+	_, r, err := feeabs.SignAndDeliver(
 		chain.t,
 		chain.TxConfig,
 		chain.App.GetBaseApp(),
@@ -193,6 +235,96 @@ func (chain *TestChain) SendMsgs(msgs ...sdk.Msg) (*sdk.Result, error) {
 	chain.captureIBCEvents(r)
 
 	return r, nil
+}
+
+func (chain *TestChain) captureIBCEvents(r *sdk.Result) {
+	toSend := getSendPackets(r.Events)
+	if len(toSend) > 0 {
+		// Keep a queue on the chain that we can relay in tests
+		chain.PendingSendPackets = append(chain.PendingSendPackets, toSend...)
+	}
+	toAck := getAckPackets(r.Events)
+	if len(toAck) > 0 {
+		// Keep a queue on the chain that we can relay in tests
+		chain.PendingAckPackets = append(chain.PendingAckPackets, toAck...)
+	}
+}
+
+// GetClientState retrieves the client state for the provided clientID. The client is
+// expected to exist otherwise testing will fail.
+func (chain *TestChain) GetClientState(clientID string) exported.ClientState {
+	clientState, found := chain.App.GetIBCKeeper().ClientKeeper.GetClientState(chain.GetContext(), clientID)
+	require.True(chain.t, found)
+
+	return clientState
+}
+
+// GetValsAtHeight will return the validator set of the chain at a given height. It will return
+// a success boolean depending on if the validator set exists or not at that height.
+func (chain *TestChain) GetValsAtHeight(height int64) (*tmtypes.ValidatorSet, bool) {
+	histInfo, ok := chain.App.GetStakingKeeper().GetHistoricalInfo(chain.GetContext(), height)
+	if !ok {
+		return nil, false
+	}
+
+	valSet := stakingtypes.Validators(histInfo.Valset)
+
+	tmValidators, err := teststaking.ToTmValidators(valSet, sdk.DefaultPowerReduction)
+	if err != nil {
+		panic(err)
+	}
+	return tmtypes.NewValidatorSet(tmValidators), true
+}
+
+// GetPrefix returns the prefix for used by a chain in connection creation
+func (chain *TestChain) GetPrefix() commitmenttypes.MerklePrefix {
+	return commitmenttypes.NewMerklePrefix(chain.App.GetIBCKeeper().ConnectionKeeper.GetCommitmentPrefix().Bytes())
+}
+
+// ConstructUpdateTMClientHeader will construct a valid 07-tendermint Header to update the
+// light client on the source chain.
+func (chain *TestChain) ConstructUpdateTMClientHeader(counterparty *TestChain, clientID string) (*ibctmtypes.Header, error) {
+	return chain.ConstructUpdateTMClientHeaderWithTrustedHeight(counterparty, clientID, clienttypes.ZeroHeight())
+}
+
+// ConstructUpdateTMClientHeader will construct a valid 07-tendermint Header to update the
+// light client on the source chain.
+func (chain *TestChain) ConstructUpdateTMClientHeaderWithTrustedHeight(counterparty *TestChain, clientID string, trustedHeight clienttypes.Height) (*ibctmtypes.Header, error) {
+	header := counterparty.LastHeader
+	// Relayer must query for LatestHeight on client to get TrustedHeight if the trusted height is not set
+	if trustedHeight.IsZero() {
+		trustedHeight = chain.GetClientState(clientID).GetLatestHeight().(clienttypes.Height)
+	}
+	var (
+		tmTrustedVals *tmtypes.ValidatorSet
+		ok            bool
+	)
+	// Once we get TrustedHeight from client, we must query the validators from the counterparty chain
+	// If the LatestHeight == LastHeader.Height, then TrustedValidators are current validators
+	// If LatestHeight < LastHeader.Height, we can query the historical validator set from HistoricalInfo
+	if trustedHeight == counterparty.LastHeader.GetHeight() {
+		tmTrustedVals = counterparty.Vals
+	} else {
+		// NOTE: We need to get validators from counterparty at height: trustedHeight+1
+		// since the last trusted validators for a header at height h
+		// is the NextValidators at h+1 committed to in header h by
+		// NextValidatorsHash
+		tmTrustedVals, ok = counterparty.GetValsAtHeight(int64(trustedHeight.RevisionHeight + 1))
+		if !ok {
+			return nil, sdkerrors.Wrapf(ibctmtypes.ErrInvalidHeaderHeight, "could not retrieve trusted validators at trustedHeight: %d", trustedHeight)
+		}
+	}
+	// inject trusted fields into last header
+	// for now assume revision number is 0
+	header.TrustedHeight = trustedHeight
+
+	trustedVals, err := tmTrustedVals.ToProto()
+	if err != nil {
+		return nil, err
+	}
+	header.TrustedValidators = trustedVals
+
+	return header, nil
 }
 
 // CurrentTMClientHeader creates a TM header using the current header parameters

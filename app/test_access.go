@@ -15,7 +15,7 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 
-	"github.com/notional-labs/feeabstraction/v1/x/feeabs/keeper"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 )
 
 type TestSupport struct {
@@ -31,8 +31,8 @@ func (s TestSupport) IBCKeeper() *ibckeeper.Keeper {
 	return s.app.IBCKeeper
 }
 
-func (s TestSupport) WasmKeeper() keeper.Keeper {
-	return s.app.FeeabsKeeper
+func (s TestSupport) WasmKeeper() wasmkeeper.Keeper {
+	return s.app.WasmKeeper
 }
 
 func (s TestSupport) AppCodec() codec.Codec {

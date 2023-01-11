@@ -76,6 +76,68 @@ func (coord *Coordinator) UpdateTimeForChain(chain *TestChain) {
 	chain.App.BeginBlock(abci.RequestBeginBlock{Header: chain.CurrentHeader})
 }
 
+// SetupClients is a helper function to create clients on both chains. It assumes the
+// caller does not anticipate any errors.
+func (coord *Coordinator) SetupClients(path *Path) {
+	err := path.EndpointA.CreateClient()
+	require.NoError(coord.t, err)
+
+	err = path.EndpointB.CreateClient()
+	require.NoError(coord.t, err)
+}
+
+// SetupClientConnections is a helper function to create clients and the appropriate
+// connections on both the source and counterparty chain. It assumes the caller does not
+// anticipate any errors.
+func (coord *Coordinator) SetupConnections(path *Path) {
+	coord.SetupClients(path)
+
+	coord.CreateConnections(path)
+}
+
+// CreateConnection constructs and executes connection handshake messages in order to create
+// OPEN channels on chainA and chainB. The connection information of for chainA and chainB
+// are returned within a TestConnection struct. The function expects the connections to be
+// successfully opened otherwise testing will fail.
+func (coord *Coordinator) CreateConnections(path *Path) {
+	err := path.EndpointA.ConnOpenInit()
+	require.NoError(coord.t, err)
+
+	err = path.EndpointB.ConnOpenTry()
+	require.NoError(coord.t, err)
+
+	err = path.EndpointA.ConnOpenAck()
+	require.NoError(coord.t, err)
+
+	err = path.EndpointB.ConnOpenConfirm()
+	require.NoError(coord.t, err)
+
+	// ensure counterparty is up to date
+	err = path.EndpointA.UpdateClient()
+	require.NoError(coord.t, err)
+}
+
+// CreateChannel constructs and executes channel handshake messages in order to create
+// OPEN channels on chainA and chainB. The function expects the channels to be successfully
+// opened otherwise testing will fail.
+func (coord *Coordinator) CreateChannels(path *Path) {
+	err := path.EndpointA.ChanOpenInit()
+	require.NoError(coord.t, err)
+
+	err = path.EndpointB.ChanOpenTry()
+	require.NoError(coord.t, err)
+
+	err = path.EndpointA.ChanOpenAck()
+	require.NoError(coord.t, err)
+
+	err = path.EndpointB.ChanOpenConfirm()
+	require.NoError(coord.t, err)
+
+	// ensure counterparty is up to date
+	err = path.EndpointA.UpdateClient()
+	require.NoError(coord.t, err)
+}
+
 // GetChain returns the TestChain using the given chainID and returns an error if it does
 // not exist.
 func (coord *Coordinator) GetChain(chainID string) *TestChain {
