@@ -166,7 +166,7 @@ func (am IBCModule) OnAcknowledgementPacket(
 	var ack channeltypes.Acknowledgement
 	// TODO:  Handler ack logic here
 	// TODO : update spot price when receive ack from osmosis chain
-	bz := packet.Data
+	bz := acknowledgement
 	spotPrice, err := am.keeper.UnmarshalPacketBytesToPrice(bz)
 
 	if err != nil {

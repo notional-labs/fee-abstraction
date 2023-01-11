@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/json"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -103,10 +104,16 @@ func (k Keeper) GetChannelId(ctx sdk.Context) string {
 // TODO: need to test this function
 func (k Keeper) UnmarshalPacketBytesToPrice(bz []byte) (sdk.Dec, error) {
 	var spotPrice types.SpotPrice
+	fmt.Println(string(bz))
 	err := json.Unmarshal(bz, &spotPrice)
 	if err != nil {
 		return sdk.Dec{}, sdkerrors.New("ibc ack data umarshal", 1, "error when json.Unmarshal")
 	}
+	fmt.Println("=============================")
+	fmt.Println("=============================")
+	fmt.Println(spotPrice)
+	fmt.Println("=============================")
+	fmt.Println("=============================")
 
 	spotPriceDec, err := sdk.NewDecFromStr(spotPrice.SpotPrice)
 	if err != nil {
