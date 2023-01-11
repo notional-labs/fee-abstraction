@@ -63,11 +63,7 @@ func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, poolId uint64, baseDeno
 		return sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
 	}
 
-	packetBytes, err := packetData.GetBytes()
-	if err != nil {
-		return sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, "cannot marshal the packet: "+err.Error())
-	}
-
+	packetBytes := packetData.GetBytes()
 	// Create the IBC packet
 	packet := channeltypes.NewPacket(
 		packetBytes,
@@ -118,11 +114,7 @@ func (k Keeper) SendIbcSwapAmountInRoute(
 		return sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
 	}
 
-	packetBytes, err := packetData.GetBytes()
-	if err != nil {
-		return sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, "cannot marshal the packet: "+err.Error())
-	}
-
+	packetBytes := packetData.GetBytes()
 	timeoutHeight := clienttypes.NewHeight(0, 100000000)
 	timeoutTimestamp := uint64(0)
 
