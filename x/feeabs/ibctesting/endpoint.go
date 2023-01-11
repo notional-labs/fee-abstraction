@@ -288,3 +288,38 @@ func (endpoint *Endpoint) ChanOpenTry() error {
 
 	return nil
 }
+
+// ChanOpenAck will construct and execute a MsgChannelOpenAck on the associated endpoint.
+func (endpoint *Endpoint) ChanOpenAck() error {
+	if err := endpoint.UpdateClient(); err != nil {
+		return err
+	}
+
+	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	proof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
+
+	msg := channeltypes.NewMsgChannelOpenAck(
+		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
+		endpoint.Counterparty.ChannelID, endpoint.Counterparty.ChannelConfig.Version, // testing doesn't use flexible selection
+		proof, height,
+		endpoint.Chain.SenderAccount.GetAddress().String(),
+	)
+	return endpoint.Chain.sendMsgs(msg)
+}
+
+// ChanOpenConfirm will construct and execute a MsgChannelOpenConfirm on the associated endpoint.
+func (endpoint *Endpoint) ChanOpenConfirm() error {
+	if err := endpoint.UpdateClient(); err != nil {
+		return err
+	}
+
+	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	proof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
+
+	msg := channeltypes.NewMsgChannelOpenConfirm(
+		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
+		proof, height,
+		endpoint.Chain.SenderAccount.GetAddress().String(),
+	)
+	return endpoint.Chain.sendMsgs(msg)
+}
