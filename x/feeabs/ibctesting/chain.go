@@ -2,6 +2,7 @@ package ibctesting
 
 import (
 	"testing"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -13,6 +14,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/cosmos/ibc-go/v3/modules/core/types"
@@ -20,8 +22,12 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/cosmos/ibc-go/v3/testing/mock"
 	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto/tmhash"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmprotoversion "github.com/tendermint/tendermint/proto/tendermint/version"
 	tmtypes "github.com/tendermint/tendermint/types"
+	tmversion "github.com/tendermint/tendermint/version"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	feeabs "github.com/notional-labs/feeabstraction/v1/app"
@@ -119,6 +125,152 @@ func NewTestChain(t *testing.T, coord *Coordinator, chainID string, opts ...wasm
 	coord.CommitBlock(chain)
 
 	return chain
+}
+
+// NextBlock sets the last header to the current header and increments the current header to be
+// at the next block height. It does not update the time as that is handled by the Coordinator.
+//
+// CONTRACT: this function must only be called after app.Commit() occurs
+func (chain *TestChain) NextBlock() {
+	// set the last header to the current header
+	// use nil trusted fields
+	chain.LastHeader = chain.CurrentTMClientHeader()
+
+	// increment the current header
+	chain.CurrentHeader = tmproto.Header{
+		ChainID: chain.ChainID,
+		Height:  chain.App.LastBlockHeight() + 1,
+		AppHash: chain.App.LastCommitID().Hash,
+		// NOTE: the time is increased by the coordinator to maintain time synchrony amongst
+		// chains.
+		Time:               chain.CurrentHeader.Time,
+		ValidatorsHash:     chain.Vals.Hash(),
+		NextValidatorsHash: chain.Vals.Hash(),
+	}
+
+	chain.App.BeginBlock(abci.RequestBeginBlock{Header: chain.CurrentHeader})
+}
+
+// sendMsgs delivers a transaction through the application without returning the result.
+func (chain *TestChain) sendMsgs(msgs ...sdk.Msg) error {
+	_, err := chain.SendMsgs(msgs...)
+	return err
+}
+
+// SendMsgs delivers a transaction through the application. It updates the senders sequence
+// number and updates the TestChain's headers. It returns the result and error if one
+// occurred.
+func (chain *TestChain) SendMsgs(msgs ...sdk.Msg) (*sdk.Result, error) {
+	// ensure the chain has the latest time
+	chain.Coordinator.UpdateTimeForChain(chain)
+
+	_, r, err := wasmd.SignAndDeliver(
+		chain.t,
+		chain.TxConfig,
+		chain.App.GetBaseApp(),
+		chain.GetContext().BlockHeader(),
+		msgs,
+		chain.ChainID,
+		[]uint64{chain.SenderAccount.GetAccountNumber()},
+		[]uint64{chain.SenderAccount.GetSequence()},
+		true, true, chain.senderPrivKey,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// SignAndDeliver calls app.Commit()
+	chain.NextBlock()
+
+	// increment sequence for successful transaction execution
+	err = chain.SenderAccount.SetSequence(chain.SenderAccount.GetSequence() + 1)
+	if err != nil {
+		return nil, err
+	}
+
+	chain.Coordinator.IncrementTime()
+
+	chain.captureIBCEvents(r)
+
+	return r, nil
+}
+
+// CurrentTMClientHeader creates a TM header using the current header parameters
+// on the chain. The trusted fields in the header are set to nil.
+func (chain *TestChain) CurrentTMClientHeader() *ibctmtypes.Header {
+	return chain.CreateTMClientHeader(chain.ChainID, chain.CurrentHeader.Height, clienttypes.Height{}, chain.CurrentHeader.Time, chain.Vals, nil, chain.Signers)
+}
+
+// CreateTMClientHeader creates a TM header to update the TM client. Args are passed in to allow
+// caller flexibility to use params that differ from the chain.
+func (chain *TestChain) CreateTMClientHeader(chainID string, blockHeight int64, trustedHeight clienttypes.Height, timestamp time.Time, tmValSet, tmTrustedVals *tmtypes.ValidatorSet, signers []tmtypes.PrivValidator) *ibctmtypes.Header {
+	var (
+		valSet      *tmproto.ValidatorSet
+		trustedVals *tmproto.ValidatorSet
+	)
+	require.NotNil(chain.t, tmValSet)
+
+	vsetHash := tmValSet.Hash()
+
+	tmHeader := tmtypes.Header{
+		Version:            tmprotoversion.Consensus{Block: tmversion.BlockProtocol, App: 2},
+		ChainID:            chainID,
+		Height:             blockHeight,
+		Time:               timestamp,
+		LastBlockID:        MakeBlockID(make([]byte, tmhash.Size), 10_000, make([]byte, tmhash.Size)),
+		LastCommitHash:     chain.App.LastCommitID().Hash,
+		DataHash:           tmhash.Sum([]byte("data_hash")),
+		ValidatorsHash:     vsetHash,
+		NextValidatorsHash: vsetHash,
+		ConsensusHash:      tmhash.Sum([]byte("consensus_hash")),
+		AppHash:            chain.CurrentHeader.AppHash,
+		LastResultsHash:    tmhash.Sum([]byte("last_results_hash")),
+		EvidenceHash:       tmhash.Sum([]byte("evidence_hash")),
+		ProposerAddress:    tmValSet.Proposer.Address, //nolint:staticcheck
+	}
+	hhash := tmHeader.Hash()
+	blockID := MakeBlockID(hhash, 3, tmhash.Sum([]byte("part_set")))
+	voteSet := tmtypes.NewVoteSet(chainID, blockHeight, 1, tmproto.PrecommitType, tmValSet)
+
+	commit, err := tmtypes.MakeCommit(blockID, blockHeight, 1, voteSet, signers, timestamp)
+	require.NoError(chain.t, err)
+
+	signedHeader := &tmproto.SignedHeader{
+		Header: tmHeader.ToProto(),
+		Commit: commit.ToProto(),
+	}
+
+	valSet, err = tmValSet.ToProto()
+	if err != nil {
+		panic(err)
+	}
+
+	if tmTrustedVals != nil {
+		trustedVals, err = tmTrustedVals.ToProto()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// The trusted fields may be nil. They may be filled before relaying messages to a client.
+	// The relayer is responsible for querying client and injecting appropriate trusted fields.
+	return &ibctmtypes.Header{
+		SignedHeader:      signedHeader,
+		ValidatorSet:      valSet,
+		TrustedHeight:     trustedHeight,
+		TrustedValidators: trustedVals,
+	}
+}
+
+// MakeBlockID copied unimported test functions from tmtypes to use them here
+func MakeBlockID(hash []byte, partSetSize uint32, partSetHash []byte) tmtypes.BlockID {
+	return tmtypes.BlockID{
+		Hash: hash,
+		PartSetHeader: tmtypes.PartSetHeader{
+			Total: partSetSize,
+			Hash:  partSetHash,
+		},
+	}
 }
 
 var _ ibctesting.TestingApp = TestingAppDecorator{}
