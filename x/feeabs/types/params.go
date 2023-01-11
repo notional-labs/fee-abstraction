@@ -47,17 +47,17 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func (p Params) Validate() error {
 	err := validateOsmosisIbcDenom(p.OsmosisIbcDenom)
 	if err != nil {
-		return fmt.Errorf("invalid ibc denom", err)
+		return fmt.Errorf("invalid ibc denom %s", err)
 	}
 
 	err = validateIbcConnectionId(p.OsmosisIbcConnectionId)
 	if err != nil {
-		return fmt.Errorf("invalid connection id", err)
+		return fmt.Errorf("invalid connection id %s", err)
 	}
 
 	err = validateOsmosisQueryContract(p.OsmosisQueryContract)
 	if err != nil {
-		return fmt.Errorf("invalid query contract", err)
+		return fmt.Errorf("invalid query contract %s", err)
 	}
 
 	if p.OsmosisExchangeRateUpdatePeriod == 0 {
