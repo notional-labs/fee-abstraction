@@ -156,6 +156,7 @@ var (
 		liquidity.AppModuleBasic{},
 		router.AppModuleBasic{},
 		ica.AppModuleBasic{},
+		wasm.AppModuleBasic{},
 		feeabsmodule.AppModuleBasic{},
 	)
 

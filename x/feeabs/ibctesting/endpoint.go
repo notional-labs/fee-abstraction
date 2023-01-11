@@ -323,3 +323,55 @@ func (endpoint *Endpoint) ChanOpenConfirm() error {
 	)
 	return endpoint.Chain.sendMsgs(msg)
 }
+
+// ChanCloseInit will construct and execute a MsgChannelCloseInit on the associated endpoint.
+//
+// NOTE: does not work with ibc-transfer module
+func (endpoint *Endpoint) ChanCloseInit() error {
+	msg := channeltypes.NewMsgChannelCloseInit(
+		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
+		endpoint.Chain.SenderAccount.GetAddress().String(),
+	)
+	return endpoint.Chain.sendMsgs(msg)
+}
+
+// ChanCloseConfirm will construct and execute a NewMsgChannelCloseConfirm on the associated endpoint.
+func (endpoint *Endpoint) ChanCloseConfirm() error {
+	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	proof, proofHeight := endpoint.Counterparty.QueryProof(channelKey)
+
+	msg := channeltypes.NewMsgChannelCloseConfirm(
+		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
+		proof, proofHeight,
+		endpoint.Chain.SenderAccount.GetAddress().String(),
+	)
+	return endpoint.Chain.sendMsgs(msg)
+}
+
+// RecvPacket receives a packet on the associated endpoint.
+// The counterparty client is updated.
+func (endpoint *Endpoint) RecvPacket(packet channeltypes.Packet) error {
+	// get proof of packet commitment on source
+	packetKey := host.PacketCommitmentKey(packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
+	proof, proofHeight := endpoint.Counterparty.Chain.QueryProof(packetKey)
+
+	recvMsg := channeltypes.NewMsgRecvPacket(packet, proof, proofHeight, endpoint.Chain.SenderAccount.GetAddress().String())
+
+	// receive on counterparty and update source client
+	if err := endpoint.Chain.sendMsgs(recvMsg); err != nil {
+		return err
+	}
+
+	return endpoint.Counterparty.UpdateClient()
+}
+
+// AcknowledgePacket sends a MsgAcknowledgement to the channel associated with the endpoint.
+func (endpoint *Endpoint) AcknowledgePacket(packet channeltypes.Packet, ack []byte) error {
+	// get proof of acknowledgement on counterparty
+	packetKey := host.PacketAcknowledgementKey(packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
+	proof, proofHeight := endpoint.Counterparty.QueryProof(packetKey)
+
+	ackMsg := channeltypes.NewMsgAcknowledgement(packet, ack, proof, proofHeight, endpoint.Chain.SenderAccount.GetAddress().String())
+
+	return endpoint.Chain.sendMsgs(ackMsg)
+}

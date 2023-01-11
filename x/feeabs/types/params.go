@@ -19,11 +19,11 @@ const (
 
 // Parameter keys store keys.
 var (
-	KeyOsmosisIbcDenom                 = []byte("osmosis_ibc_denom")
-	KeyOsmosisIbcConnectionId          = []byte("osmosis_ibc_connection_id")
-	KeyOsmosisQueryContract            = []byte("osmosis_query_contract")
-	KeyOsmosisExchangeRateUpdatePeriod = []byte("osmosis_exchange_rate_update_period")
-	KeyAccumulatedOsmosisFeeSwapPeriod = []byte("accumulated_osmosis_fee_swap_period")
+	KeyOsmosisIbcDenom                 = []byte("osmosisIbcDenom")
+	KeyOsmosisIbcConnectionId          = []byte("osmosisIbcConnectionId")
+	KeyOsmosisQueryContract            = []byte("osmosisQueryContract")
+	KeyOsmosisExchangeRateUpdatePeriod = []byte("osmosisExchangeRateUpdatePeriod")
+	KeyAccumulatedOsmosisFeeSwapPeriod = []byte("accumulatedOsmosisFeeSwapPeriod")
 
 	_ paramtypes.ParamSet = &Params{}
 )
