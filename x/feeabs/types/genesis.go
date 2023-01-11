@@ -1,9 +1,6 @@
 package types
 
-import (
-	"errors"
-	"fmt"
-)
+import fmt "fmt"
 
 // DefaultGenesis returns the incentive module's default genesis state.
 func DefaultGenesis() *GenesisState {
@@ -32,7 +29,7 @@ func (gs GenesisState) Validate() error {
 	for _, epoch := range gs.Epochs {
 		err := epoch.Validate()
 		if err != nil {
-			return errors.New("invalid epoch")
+			return err
 		}
 	}
 	return nil
