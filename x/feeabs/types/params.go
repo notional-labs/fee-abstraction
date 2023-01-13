@@ -9,9 +9,9 @@ import (
 
 // Feeabs params default values .
 const (
-	DefaultSwapPeriod time.Duration = time.Minute * 100
+	DefaultSwapPeriod time.Duration = time.Hour * 24
 
-	DefaultQueryPeriod time.Duration = time.Minute * 1
+	DefaultQueryPeriod time.Duration = time.Minute * 10
 
 	DefaultContractAddress string = ""
 )
