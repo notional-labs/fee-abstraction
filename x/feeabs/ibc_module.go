@@ -112,7 +112,6 @@ func (am IBCModule) OnChanOpenAck(
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
-	// TODO : update spot price when receive ack from osmosis chain
 	return nil
 }
 
@@ -226,6 +225,5 @@ func (am IBCModule) OnTimeoutPacket(
 ) error {
 	// TODO: Resend request if timeout
 	// TODO: emit event
-
 	return nil
 }
