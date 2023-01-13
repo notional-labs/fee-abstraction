@@ -733,6 +733,35 @@ func NewFeeAbs(
 // Name returns the name of the App
 func (app *FeeAbs) Name() string { return app.BaseApp.Name() }
 
+// GetBaseApp returns the base app of the application
+func (app *FeeAbs) GetBaseApp() *baseapp.BaseApp { return app.BaseApp }
+
+// GetStakingKeeper implements the TestingApp interface.
+func (app *FeeAbs) GetStakingKeeper() stakingkeeper.Keeper {
+	return app.StakingKeeper
+}
+
+// GetIBCKeeper implements the TestingApp interface.
+func (app *FeeAbs) GetTransferKeeper() *ibctransferkeeper.Keeper {
+	return &app.TransferKeeper
+}
+
+// GetIBCKeeper implements the TestingApp interface.
+func (app *FeeAbs) GetIBCKeeper() *ibckeeper.Keeper {
+	return app.IBCKeeper
+}
+
+// GetScopedIBCKeeper implements the TestingApp interface.
+func (app *FeeAbs) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
+	return app.ScopedIBCKeeper
+}
+
+// GetTxConfig implements the TestingApp interface.
+func (app *FeeAbs) GetTxConfig() client.TxConfig {
+	cfg := MakeEncodingConfig()
+	return cfg.TxConfig
+}
+
 // BeginBlocker application updates every begin block
 func (app *FeeAbs) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
