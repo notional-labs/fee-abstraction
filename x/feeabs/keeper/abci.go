@@ -36,12 +36,18 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 			epochInfo.CurrentEpochStartTime = epochInfo.StartTime
 			logger.Info(fmt.Sprintf("Starting new epoch with identifier %s epoch number %d", epochInfo.Identifier, epochInfo.CurrentEpoch))
 		} else {
-			// We will handle swap to Osmosis pool here
-
-			err := k.handleOsmosisIbcQuery(ctx)
-			if err != nil {
-				panic(err)
+			if epochInfo.Identifier == "query" {
+				err := k.handleOsmosisIbcQuery(ctx)
+				if err != nil {
+					panic(err)
+				}
 			}
+
+			if epochInfo.Identifier == "swap" {
+				// We will handle swap to Osmosis pool here
+
+			}
+			
 			ctx.EventManager().EmitEvent(
 				sdk.NewEvent(
 					types.EventTypeEpochEnd,
