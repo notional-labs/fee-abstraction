@@ -4,7 +4,7 @@ osmosisd tx wasm store scripts/fee_abstraction.wasm --keyring-backend=test --hom
 
 sleep 2
 
-ID=11
+ID=13
 
 INIT='{"packet_lifetime":100}'
 osmosisd tx wasm instantiate $ID "$INIT" --keyring-backend=test --home=$HOME/.osmosisd/validator1 --from validator1 --chain-id testing --label "test" --no-admin --yes
@@ -16,3 +16,4 @@ osmosisd query wasm contract-state smart $CONTRACT "$query_params"
 
 echo "feeabs contract: "
 echo $CONTRACT
+

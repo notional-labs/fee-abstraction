@@ -68,7 +68,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 }
 
 func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context) error {
-	channelID := "channel-1" // for testing
+	channelID := "channel-0" // for testing
 	poolId := uint64(1)      // for testing
 	baseDenom := "uosmo"
 	quoteDenom := "uatom"
