@@ -15,7 +15,7 @@
 
 ## Test
 ```
-feeappd tx feeabs queryomosis --from feeacc --keyring-backend test --chain-id feeappd-t1
+feeappd tx feeabs queryomosis --from feeacc --keyring-backend test --chain-id feeappd-t1 --yes
 # Wait for about 10 sec
 feeappd q feeabs osmo-spot-price
 ```
