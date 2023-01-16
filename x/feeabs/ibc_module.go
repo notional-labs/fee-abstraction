@@ -170,13 +170,17 @@ func (am IBCModule) OnAcknowledgementPacket(
 	//TODO: Handler ack logic here
 
 	var feeabsIbcPacketData types.FeeabsIbcPacketData
-	if err := feeabsIbcPacketData.Unmarshal(packet.GetData()); err != nil {
+	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &feeabsIbcPacketData); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
 	}
 
 	// Dispatch packet
 	switch packet := feeabsIbcPacketData.Packet.(type) {
 	case *types.FeeabsIbcPacketData_IbcOsmosisQuerySpotPriceRequestPacketData:
+		err := am.keeper.OnAcknowledgementIbcOsmosisQueryRequest(ctx, ack)
+		if err != nil {
+			return err
+		}
 	case *types.FeeabsIbcPacketData_IbcSwapAmountInRoute:
 		err := am.keeper.OnAcknowledgementIbcSwapAmountInRoute(ctx, ack)
 		if err != nil {

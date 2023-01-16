@@ -1,15 +1,13 @@
 package feeabs_test
 
 import (
-	"fmt"
 	"testing"
 
-	// wasmibctesting "github.com/CosmWasm/wasmd/x/wasm/ibctesting"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
 	wasmibctesting "github.com/notional-labs/feeabstraction/v1/x/feeabs/ibctesting"
+	"github.com/notional-labs/feeabstraction/v1/x/feeabs/types"
 
-	// "github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
 	wasmvm "github.com/CosmWasm/wasmvm"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,8 +18,86 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	// feeabs "github.com/notional-labs/feeabstraction/v1/app"
 )
+
+func TestFeeAbsIBCToContract(t *testing.T) {
+	specs := map[string]struct {
+		contract      wasmtesting.IBCContractCallbacks
+		setupContract func(t *testing.T, contract wasmtesting.IBCContractCallbacks, chain *wasmibctesting.TestChain)
+	}{
+		"query": {
+			contract: &queryFeeabsContract{},
+			setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, chain *wasmibctesting.TestChain) {
+				c := contract.(*queryFeeabsContract)
+				c.t = t
+				c.chain = chain
+			},
+		},
+	}
+	for name, spec := range specs {
+		t.Run(name, func(t *testing.T) {
+			var (
+				chainAOpts = []wasmkeeper.Option{wasmkeeper.WithWasmEngine(
+					wasmtesting.NewIBCContractMockWasmer(spec.contract),
+				)}
+				coordinator = wasmibctesting.NewCoordinator(t, 2, []wasmkeeper.Option{}, chainAOpts)
+				chainA      = coordinator.GetChain(wasmibctesting.GetChainID(0))
+				chainB      = coordinator.GetChain(wasmibctesting.GetChainID(1))
+			)
+
+			coordinator.CommitBlock(chainA, chainB)
+			myContractAddr := chainB.SeedNewContractInstance()
+			contractBPortID := chainB.ContractInfo(myContractAddr).IBCPortID
+
+			spec.setupContract(t, spec.contract, chainB)
+
+			path := wasmibctesting.NewPath(chainA, chainB)
+			path.EndpointA.ChannelConfig = &ibctesting.ChannelConfig{
+				PortID:  "feeabs",
+				Version: "",
+				Order:   channeltypes.UNORDERED,
+			}
+			path.EndpointB.ChannelConfig = &ibctesting.ChannelConfig{
+				PortID:  contractBPortID,
+				Version: "",
+				Order:   channeltypes.UNORDERED,
+			}
+
+			coordinator.SetupConnections(path)
+			coordinator.CreateChannels(path)
+
+			msg := types.NewMsgSendQuerySpotPrice(
+				chainA.SenderAccount.GetAddress(),
+				1,
+				path.EndpointA.ChannelConfig.PortID,
+				path.EndpointA.ChannelID,
+				"",
+				"",
+			)
+			_, err := chainA.SendMsgs(msg)
+			require.NoError(t, err)
+			require.NoError(t, path.EndpointB.UpdateClient())
+
+			// then
+			require.Equal(t, 1, len(chainA.PendingSendPackets))
+			require.Equal(t, 0, len(chainB.PendingSendPackets))
+
+			// and when relay to chain B and handle Ack on chain A
+			err = coordinator.RelayAndAckPendingPackets(path)
+			require.NoError(t, err)
+
+			// then
+			require.Equal(t, 0, len(chainA.PendingSendPackets))
+			require.Equal(t, 0, len(chainB.PendingSendPackets))
+
+			expectedSpotPrice, err := sdk.NewDecFromStr("1.5")
+			require.NoError(t, err)
+			spotPrice, err := chainA.GetTestSupport().FeeAbsKeeper().GetOsmosisExchangeRate(chainA.GetContext())
+			require.NoError(t, err)
+			require.Equal(t, expectedSpotPrice, spotPrice)
+		})
+	}
+}
 
 func TestFromIBCTransferToContract(t *testing.T) {
 	// scenario: given two chains,
@@ -58,7 +134,6 @@ func TestFromIBCTransferToContract(t *testing.T) {
 				chainB      = coordinator.GetChain(wasmibctesting.GetChainID(1))
 			)
 			coordinator.CommitBlock(chainA, chainB)
-			fmt.Printf("Address: %v\n", chainB.SenderAccount.GetAddress())
 			myContractAddr := chainB.SeedNewContractInstance()
 			contractBPortID := chainB.ContractInfo(myContractAddr).IBCPortID
 
@@ -110,6 +185,46 @@ func TestFromIBCTransferToContract(t *testing.T) {
 			assert.Equal(t, expBalance, gotBalance, "got total balance: %s", chainB.AllBalances(chainB.SenderAccount.GetAddress()))
 		})
 	}
+}
+
+var _ wasmtesting.IBCContractCallbacks = &queryFeeabsContract{}
+
+// contract that acts as the receiving side for a query feeabs
+type queryFeeabsContract struct {
+	contractStub
+	t     *testing.T
+	chain *wasmibctesting.TestChain
+}
+
+func (c *queryFeeabsContract) IBCPacketReceive(
+	codeID wasmvm.Checksum,
+	env wasmvmtypes.Env,
+	msg wasmvmtypes.IBCPacketReceiveMsg,
+	store wasmvm.KVStore,
+	goapi wasmvm.GoAPI,
+	querier wasmvm.Querier,
+	gasMeter wasmvm.GasMeter,
+	gasLimit uint64,
+	deserCost wasmvmtypes.UFraction,
+) (*wasmvmtypes.IBCReceiveResult, uint64, error) {
+	result := `{"spot_price":"1.5"}`
+	ack := channeltypes.NewResultAcknowledgement([]byte(result)).Acknowledgement()
+	var log []wasmvmtypes.EventAttribute
+	return &wasmvmtypes.IBCReceiveResult{Ok: &wasmvmtypes.IBCReceiveResponse{Acknowledgement: ack, Attributes: log}}, 0, nil
+}
+
+func (c *queryFeeabsContract) IBCPacketAck(
+	codeID wasmvm.Checksum,
+	env wasmvmtypes.Env,
+	msg wasmvmtypes.IBCPacketAckMsg,
+	store wasmvm.KVStore,
+	goapi wasmvm.GoAPI,
+	querier wasmvm.Querier,
+	gasMeter wasmvm.GasMeter,
+	gasLimit uint64,
+	deserCost wasmvmtypes.UFraction,
+) (*wasmvmtypes.IBCBasicResponse, uint64, error) {
+	return &wasmvmtypes.IBCBasicResponse{}, 0, nil
 }
 
 var _ wasmtesting.IBCContractCallbacks = &ackReceiverContract{}

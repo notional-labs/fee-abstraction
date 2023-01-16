@@ -38,10 +38,10 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 		} else {
 			// We will handle swap to Osmosis pool here
 
-			err := k.handleOsmosisIbcQuery(ctx)
-			if err != nil {
-				panic(err)
-			}
+			// err := k.handleOsmosisIbcQuery(ctx)
+			// if err != nil {
+			// 	panic(err)
+			// }
 			ctx.EventManager().EmitEvent(
 				sdk.NewEvent(
 					types.EventTypeEpochEnd,
@@ -67,10 +67,6 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 	})
 }
 
-func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context) error {
-	channelID := "channel-1" // for testing
-	poolId := uint64(1)      // for testing
-	baseDenom := "uosmo"
-	quoteDenom := "uatom"
-	return k.SendOsmosisQueryRequest(ctx, poolId, baseDenom, quoteDenom, types.IBCPortID, channelID)
+func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context, poolId uint64, portID string, channelID string, baseDenom string, quoteDenom string) error {
+	return k.SendOsmosisQueryRequest(ctx, poolId, baseDenom, quoteDenom, portID, channelID)
 }
