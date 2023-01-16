@@ -46,24 +46,6 @@ func TestFromIBCTransferToContract(t *testing.T) {
 			expChainABalanceDiff: transferAmount.Neg(),
 			expChainBBalanceDiff: transferAmount,
 		},
-		// "nack": {
-		// 	contract: &nackReceiverContract{},
-		// 	setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, chain *wasmibctesting.TestChain) {
-		// 		c := contract.(*nackReceiverContract)
-		// 		c.t = t
-		// 	},
-		// 	expChainABalanceDiff: sdk.ZeroInt(),
-		// 	expChainBBalanceDiff: sdk.ZeroInt(),
-		// },
-		// "error": {
-		// 	contract: &errorReceiverContract{},
-		// 	setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, chain *wasmibctesting.TestChain) {
-		// 		c := contract.(*errorReceiverContract)
-		// 		c.t = t
-		// 	},
-		// 	expChainABalanceDiff: sdk.ZeroInt(),
-		// 	expChainBBalanceDiff: sdk.ZeroInt(),
-		// },
 	}
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
