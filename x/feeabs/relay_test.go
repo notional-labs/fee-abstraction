@@ -3,13 +3,11 @@ package feeabs_test
 import (
 	"testing"
 
-	// wasmibctesting "github.com/CosmWasm/wasmd/x/wasm/ibctesting"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
 	wasmibctesting "github.com/notional-labs/feeabstraction/v1/x/feeabs/ibctesting"
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/types"
 
-	// "github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
 	wasmvm "github.com/CosmWasm/wasmvm"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,7 +18,6 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	// feeabs "github.com/notional-labs/feeabstraction/v1/app"
 )
 
 func TestFeeAbsIBCToContract(t *testing.T) {
