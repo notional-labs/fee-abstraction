@@ -3,7 +3,7 @@
 ## Setup
 ```
 # Deploy chains
-./scripts/node_start/runnode_custom.sh
+./scripts/node_start/runnode_custom.sh c
 ./scripts/node_start/runnode_osmosis.sh
 # Run relayer
 ./scripts/run_relayer.sh
