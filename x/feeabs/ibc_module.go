@@ -169,16 +169,6 @@ func (am IBCModule) OnAcknowledgementPacket(
 	}
 	//TODO: Handler ack logic here
 
-	// switch ackDispatch := ack.Response.(type) {
-	// case *channeltypes.Acknowledgement_Error:
-	// 	_ = ackDispatch
-	// 	fmt.Printf("Error")
-	// case *channeltypes.Acknowledgement_Result:
-	// 	_ = ackDispatch
-	// 	fmt.Printf("%s\n", ackDispatch.Result)
-	// 	fmt.Printf("Result")
-	// }
-
 	var feeabsIbcPacketData types.FeeabsIbcPacketData
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &feeabsIbcPacketData); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
