@@ -16,10 +16,11 @@ service Msg {
 // Params defines the parameters for the feeabs module.
 message MsgSendQuerySpotPrice {
     string from_address = 1;
-    string source_port = 2;
-    string source_channel = 3;
-    string base_assets = 4;
-    string quote_assets = 5;
+    uint64 pool_id = 2;
+    string source_port = 3;
+    string source_channel = 4;
+    string base_denom = 5;
+    string quote_denom = 6;
 }
 message MsgSendQuerySpotPriceResponse{}
   

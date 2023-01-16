@@ -71,6 +71,7 @@ func TestFeeAbsIBCToContract(t *testing.T) {
 
 			msg := types.NewMsgSendQuerySpotPrice(
 				chainA.SenderAccount.GetAddress(),
+				1,
 				path.EndpointA.ChannelConfig.PortID,
 				path.EndpointA.ChannelID,
 				"",

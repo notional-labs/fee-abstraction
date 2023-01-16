@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"strconv"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -23,14 +25,18 @@ func NewTxCmd() *cobra.Command {
 }
 func NewQueryOsmosisSpotPriceCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "queryomosis [src-port] [src-channel] [base_asset] [quote_asset]",
-		Args: cobra.ExactArgs(4),
+		Use:  "queryomosis [pool-id] [src-port] [src-channel] [base_asset] [quote_asset]",
+		Args: cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
-			msg := types.NewMsgSendQuerySpotPrice(clientCtx.GetFromAddress(), args[0], args[1], args[2], args[3])
+			poolID, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return err
+			}
+			msg := types.NewMsgSendQuerySpotPrice(clientCtx.GetFromAddress(), poolID, args[1], args[2], args[3], args[4])
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 
 		},
