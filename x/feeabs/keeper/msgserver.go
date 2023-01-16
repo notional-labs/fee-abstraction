@@ -28,7 +28,7 @@ func (k Keeper) SendQuerySpotPrice(goCtx context.Context, msg *types.MsgSendQuer
 	if err != nil {
 		return nil, err
 	}
-	err = k.handleOsmosisIbcQuery(ctx)
+	err = k.handleOsmosisIbcQuery(ctx, msg.SourcePort, msg.SourceChannel, msg.BaseAssets, msg.QuoteAssets)
 	if err != nil {
 		return nil, err
 	}

@@ -23,14 +23,14 @@ func NewTxCmd() *cobra.Command {
 }
 func NewQueryOsmosisSpotPriceCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "queryomosis",
-		Args: cobra.ExactArgs(0),
+		Use:  "queryomosis [src-port] [src-channel] [base_asset] [quote_asset]",
+		Args: cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
-			msg := types.NewMsgSendQuerySpotPrice(clientCtx.GetFromAddress())
+			msg := types.NewMsgSendQuerySpotPrice(clientCtx.GetFromAddress(), args[0], args[1], args[2], args[3])
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 
 		},

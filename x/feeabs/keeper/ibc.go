@@ -98,6 +98,26 @@ func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, poolId uint64, baseDeno
 	return k.channelKeeper.SendPacket(ctx, channelCap, packet)
 }
 
+// OnAcknowledgementIbcSwapAmountInRoute handle Acknowledgement for SwapAmountInRoute packet
+func (k Keeper) OnAcknowledgementIbcOsmosisQueryRequest(ctx sdk.Context, ack channeltypes.Acknowledgement) error {
+	switch dispatchedAck := ack.Response.(type) {
+	case *channeltypes.Acknowledgement_Error:
+		_ = dispatchedAck.Error
+		return nil
+	case *channeltypes.Acknowledgement_Result:
+		// Unmarshal dispatchedAck result
+		spotPrice, err := k.UnmarshalPacketBytesToPrice(dispatchedAck.Result)
+		if err != nil {
+			return err
+		}
+		k.SetOsmosisExchangeRate(ctx, spotPrice)
+		return nil
+	default:
+		// The counter-party module doesn't implement the correct acknowledgment format
+		return errors.New("invalid acknowledgment format")
+	}
+}
+
 // Send request for swap SwapAmountInRoute over IBC
 func (k Keeper) SendIbcSwapAmountInRoute(
 	ctx sdk.Context,
@@ -182,11 +202,6 @@ func (k Keeper) UnmarshalPacketBytesToPrice(bz []byte) (sdk.Dec, error) {
 	if err != nil {
 		return sdk.Dec{}, sdkerrors.New("ibc ack data umarshal", 1, "error when json.Unmarshal")
 	}
-	fmt.Println("=============================")
-	fmt.Println("=============================")
-	fmt.Println(spotPrice)
-	fmt.Println("=============================")
-	fmt.Println("=============================")
 
 	spotPriceDec, err := sdk.NewDecFromStr(spotPrice.SpotPrice)
 	if err != nil {

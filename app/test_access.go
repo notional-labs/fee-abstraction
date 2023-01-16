@@ -5,6 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/notional-labs/feeabstraction/v1/x/feeabs/keeper"
 
 	"github.com/CosmWasm/wasmd/app/params"
 
@@ -61,6 +62,10 @@ func (s TestSupport) BankKeeper() bankkeeper.Keeper {
 
 func (s TestSupport) TransferKeeper() ibctransferkeeper.Keeper {
 	return s.app.TransferKeeper
+}
+
+func (s TestSupport) FeeAbsKeeper() keeper.Keeper {
+	return s.app.FeeabsKeeper
 }
 
 func (s TestSupport) GetBaseApp() *baseapp.BaseApp {
