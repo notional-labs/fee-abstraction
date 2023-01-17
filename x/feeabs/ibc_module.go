@@ -167,7 +167,6 @@ func (am IBCModule) OnAcknowledgementPacket(
 	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet acknowledgement: %v", err)
 	}
-	//TODO: Handler ack logic here
 
 	var feeabsIbcPacketData types.FeeabsIbcPacketData
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &feeabsIbcPacketData); err != nil {
