@@ -18,7 +18,10 @@ type SpotPrice struct {
 var ModuleCdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 
 // IBCPortKey defines the key to store the port ID in store.
-var IBCPortKey = []byte{0x01}
+var (
+	IBCPortKey        = []byte{0x01}
+	FeePoolAddressKey = []byte{0x02}
+)
 
 // NewOsmosisQueryRequestPacketData create new packet for ibc.
 func NewOsmosisQueryRequestPacketData(poolId uint64, baseDenom string, quoteDenom string) OsmosisQuerySpotPriceRequestPacketData {
@@ -51,4 +54,65 @@ func (p SwapAmountInRoute) GetBytes() []byte {
 	ibcPacket.Packet = &FeeabsIbcPacketData_IbcSwapAmountInRoute{&p}
 
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&ibcPacket))
+}
+
+// TODO: Those types should be putted in types package
+// `{
+// 	"wasm": {
+// 	  "contract": "CROSSCHAIN_SWAPS_ADDRESS",
+// 	  "msg": {
+// 		"osmosis_swap": {
+// 		  "input_coin": {
+// 			"denom": "$DENOM",
+// 			"amount": "100"
+// 		  },
+// 		  "output_denom": "uosmo",
+// 		  "slippage": {
+// 			"twap": {
+// 			  "slippage_percentage": "20",
+// 			  "window_seconds": 10
+// 			}
+// 		  },
+// 		  "receiver": "$VALIDATOR"
+// 		}
+// 	  }
+// 	}
+//   }
+//   `
+type OsmosisSpecialMemo struct {
+	Wasm map[string]interface{} `json:"wasm"`
+}
+
+type OsmosisSwapMsg struct {
+	OsmosisSwap Swap `json:"osmosis_swap"`
+}
+type Swap struct {
+	InputCoin   sdk.Coin `json:"input_coin"`
+	OutPutDenom string   `json:"output_denom"`
+	Slippage    Twap     `json:"slippage"`
+	Receiver    string   `json:"receiver"`
+}
+
+type Twap struct {
+	Twap TwapRouter `json:"twap"`
+}
+type TwapRouter struct {
+	SlippagePercentage string `json:"slippage_percentage"`
+	WindowSeconds      uint64 `json:"window_seconds"`
+}
+
+func NewOsmosisSwapMsg(inputCoin sdk.Coin, outputDenom string, slippagePercentage string, windowSeconds uint64, receiver string) OsmosisSwapMsg {
+	swap := Swap{
+		InputCoin:   inputCoin,
+		OutPutDenom: outputDenom,
+		Slippage: Twap{
+			Twap: TwapRouter{SlippagePercentage: slippagePercentage,
+				WindowSeconds: windowSeconds,
+			}},
+		Receiver: receiver,
+	}
+
+	return OsmosisSwapMsg{
+		OsmosisSwap: swap,
+	}
 }

@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"strconv"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -21,22 +19,43 @@ func NewTxCmd() *cobra.Command {
 	}
 
 	txCmd.AddCommand(NewQueryOsmosisSpotPriceCmd())
+	txCmd.AddCommand(NewSwapOverChainCmd())
+
 	return txCmd
 }
+
 func NewQueryOsmosisSpotPriceCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "queryomosis [pool-id] [src-port] [src-channel] [base_asset] [quote_asset]",
-		Args: cobra.ExactArgs(5),
+		Use:  "queryomosis",
+		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
-			poolID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
 				return err
 			}
-			msg := types.NewMsgSendQuerySpotPrice(clientCtx.GetFromAddress(), poolID, args[1], args[2], args[3], args[4])
+			msg := types.NewMsgSendQuerySpotPrice(clientCtx.GetFromAddress())
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func NewSwapOverChainCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:  "swap",
+		Args: cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			msg := types.NewMsgSwapCrossChain(clientCtx.GetFromAddress())
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 
 		},

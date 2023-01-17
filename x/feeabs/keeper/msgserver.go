@@ -4,6 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/types"
 )
 
@@ -21,6 +22,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
+// Need to remove this
 func (k Keeper) SendQuerySpotPrice(goCtx context.Context, msg *types.MsgSendQuerySpotPrice) (*types.MsgSendQuerySpotPriceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -28,10 +30,26 @@ func (k Keeper) SendQuerySpotPrice(goCtx context.Context, msg *types.MsgSendQuer
 	if err != nil {
 		return nil, err
 	}
-	err = k.handleOsmosisIbcQuery(ctx, msg.PoolId, msg.SourcePort, msg.SourceChannel, msg.BaseDenom, msg.QuoteDenom)
+	err = k.handleOsmosisIbcQuery(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.MsgSendQuerySpotPriceResponse{}, nil
+}
+
+// Need to remove this
+func (k Keeper) SwapCrossChain(goCtx context.Context, msg *types.MsgSwapCrossChain) (*types.MsgSwapCrossChainResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	_, err := sdk.AccAddressFromBech32(msg.FromAddress)
+	if err != nil {
+		return nil, err
+	}
+	err = k.transferIBCTokenToOsmosisContract(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgSwapCrossChainResponse{}, nil
 }

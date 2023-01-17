@@ -29,19 +29,30 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 			return false
 		}
 		epochInfo.CurrentEpochStartHeight = ctx.BlockHeight()
-
+		// TODO: need create function to this
+		params := k.GetParams(ctx)
 		if shouldInitialEpochStart {
 			epochInfo.EpochCountingStarted = true
 			epochInfo.CurrentEpoch = 1
 			epochInfo.CurrentEpochStartTime = epochInfo.StartTime
 			logger.Info(fmt.Sprintf("Starting new epoch with identifier %s epoch number %d", epochInfo.Identifier, epochInfo.CurrentEpoch))
-		} else {
+		} else if params.Active {
 			// We will handle swap to Osmosis pool here
+			if epochInfo.Identifier == "query" {
+				err := k.handleOsmosisIbcQuery(ctx)
+				if err != nil {
+					panic(err)
+				}
+			}
 
-			// err := k.handleOsmosisIbcQuery(ctx)
-			// if err != nil {
-			// 	panic(err)
-			// }
+			// We will handle swap to Osmosis pool here
+			if epochInfo.Identifier == "swap" {
+				err := k.handleOsmosisIbcQuery(ctx)
+				if err != nil {
+					panic(err)
+				}
+			}
+
 			ctx.EventManager().EmitEvent(
 				sdk.NewEvent(
 					types.EventTypeEpochEnd,
@@ -67,6 +78,3 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 	})
 }
 
-func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context, poolId uint64, portID string, channelID string, baseDenom string, quoteDenom string) error {
-	return k.SendOsmosisQueryRequest(ctx, poolId, baseDenom, quoteDenom, portID, channelID)
-}

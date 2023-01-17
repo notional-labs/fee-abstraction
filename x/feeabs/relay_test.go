@@ -12,10 +12,10 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	ibctransfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v3/testing"
+	ibctransfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v4/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -66,13 +66,14 @@ func TestFeeAbsIBCToContract(t *testing.T) {
 			coordinator.SetupConnections(path)
 			coordinator.CreateChannels(path)
 
+			params := chainA.GetTestSupport().FeeAbsKeeper().GetParams(chainA.GetContext())
+			params.NativeIbcDenom = "denom"
+			params.OsmosisQueryChannel = path.EndpointA.ChannelID
+			params.PoolId = 1
+			chainA.GetTestSupport().FeeAbsKeeper().SetParams(chainA.GetContext(), params)
+
 			msg := types.NewMsgSendQuerySpotPrice(
 				chainA.SenderAccount.GetAddress(),
-				1,
-				path.EndpointA.ChannelConfig.PortID,
-				path.EndpointA.ChannelID,
-				"",
-				"",
 			)
 			_, err := chainA.SendMsgs(msg)
 			require.NoError(t, err)

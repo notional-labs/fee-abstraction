@@ -31,6 +31,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// QueryOsmosisSpotPriceRequest is the request type for the Query/Feeabs RPC method.
 type QueryOsmosisSpotPriceRequest struct {
 }
 
@@ -67,7 +68,6 @@ func (m *QueryOsmosisSpotPriceRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryOsmosisSpotPriceRequest proto.InternalMessageInfo
 
-// QueryOsmosisSpotPriceRequest is the request type for the Query/FeeShares RPC method.
 type QueryOsmosisSpotPriceResponse struct {
 	BaseAsset  string                                 `protobuf:"bytes,1,opt,name=base_asset,json=baseAsset,proto3" json:"base_asset,omitempty"`
 	QuoteAsset string                                 `protobuf:"bytes,2,opt,name=quote_asset,json=quoteAsset,proto3" json:"quote_asset,omitempty"`
@@ -121,6 +121,7 @@ func (m *QueryOsmosisSpotPriceResponse) GetQuoteAsset() string {
 	return ""
 }
 
+// QueryFeeabsModuleBalacesRequest is the request type for the Query/Feeabs RPC method.
 type QueryFeeabsModuleBalacesRequest struct {
 }
 
@@ -157,7 +158,6 @@ func (m *QueryFeeabsModuleBalacesRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryFeeabsModuleBalacesRequest proto.InternalMessageInfo
 
-// QueryOsmosisSpotPriceRequest is the request type for the Query/FeeShares RPC method.
 type QueryFeeabsModuleBalacesResponse struct {
 	Balances github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,1,rep,name=balances,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"balances" yaml:"balances"`
 }
@@ -265,6 +265,7 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	// OsmosisSpotPrice return spot price of pair Osmo/nativeToken
 	OsmosisSpotPrice(ctx context.Context, in *QueryOsmosisSpotPriceRequest, opts ...grpc.CallOption) (*QueryOsmosisSpotPriceResponse, error)
+	// FeeabsModuleBalances return total balances of feeabs module
 	FeeabsModuleBalances(ctx context.Context, in *QueryFeeabsModuleBalacesRequest, opts ...grpc.CallOption) (*QueryFeeabsModuleBalacesResponse, error)
 }
 
@@ -298,6 +299,7 @@ func (c *queryClient) FeeabsModuleBalances(ctx context.Context, in *QueryFeeabsM
 type QueryServer interface {
 	// OsmosisSpotPrice return spot price of pair Osmo/nativeToken
 	OsmosisSpotPrice(context.Context, *QueryOsmosisSpotPriceRequest) (*QueryOsmosisSpotPriceResponse, error)
+	// FeeabsModuleBalances return total balances of feeabs module
 	FeeabsModuleBalances(context.Context, *QueryFeeabsModuleBalacesRequest) (*QueryFeeabsModuleBalacesResponse, error)
 }
 
