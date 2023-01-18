@@ -11,7 +11,7 @@ sleep 22
 echo $(osmosisd q bank balances "$VALIDATOR")
 
 DENOM=$(osmosisd q bank balances "$VALIDATOR" -o json | jq -r '.balances[] | select(.denom | contains("ibc")) | .denom')
-
+echo $DENOM
 cat > sample_pool.json <<EOF
 {
         "weights": "1${DENOM},1uosmo",
@@ -28,7 +28,7 @@ sleep 6
 POOL_ID=$(osmosisd query gamm pools -o json | jq -r '.pools[-1].id')
 
 # Store the swaprouter contract
-osmosisd tx wasm store scripts/bytecode/swaprouter.wasm --keyring-backend=test --home=$HOME/.osmosisd --from deployer --chain-id testing --gas 10000000 --fees 25000stake --yes
+osmosisd tx wasm store scripts/bytecode2/swaprouter.wasm --keyring-backend=test --home=$HOME/.osmosisd --from deployer --chain-id testing --gas 10000000 --fees 25000stake --yes
 # get the code id
 sleep 6
 SWAPROUTER_CODE_ID=$(osmosisd query wasm list-code -o json | jq -r '.code_infos[-1].code_id')
@@ -38,12 +38,12 @@ osmosisd tx wasm instantiate $SWAPROUTER_CODE_ID "$INIT_SWAPROUTER" --keyring-ba
 sleep 5
 SWAPROUTER_ADDRESS=$(osmosisd query wasm list-contract-by-code "$SWAPROUTER_CODE_ID" -o json | jq -r '.contracts | [last][0]')
 # Configure the swaprouter
-CONFIG_SWAPROUTER='{"set_route":{"input_denom":"'$DENOM'","output_denom":"uosmo","pool_route":[{"pool_id":'$POOL_ID',"token_out_denom":"uosmo"}]}}'
-osmosisd tx wasm execute "$SWAPROUTER_ADDRESS" "$CONFIG_SWAPROUTER" --keyring-backend=test --home=$HOME/.osmosisd --from deployer --chain-id testing -y
+CONFIG_SWAPROUTER='{"set_route":{"input_denom":"'$DENOM'","output_denom":"uosmo","pool_route":[{"pool_id":"'$POOL_ID'","token_out_denom":"uosmo"}]}}'
+osmosisd tx wasm execute "$SWAPROUTER_ADDRESS" "$CONFIG_SWAPROUTER" --keyring-backend=test --home=$HOME/.osmosisd --from validator1 --chain-id testing -y
 sleep 5
 
 # Store the crosschainswap contract
-osmosisd tx wasm store scripts/bytecode/crosschain_swaps.wasm --keyring-backend=test --home=$HOME/.osmosisd --from deployer --chain-id testing --gas 10000000 --fees 25000stake --yes
+osmosisd tx wasm store scripts/bytecode2/crosschain_swaps.wasm --keyring-backend=test --home=$HOME/.osmosisd --from deployer --chain-id testing --gas 10000000 --fees 25000stake --yes
 # get the code id
 sleep 6
 CROSSCHAIN_SWAPS_CODE_ID=$(osmosisd query wasm list-code -o json | jq -r '.code_infos[-1].code_id')
