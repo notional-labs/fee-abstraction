@@ -11,7 +11,8 @@ sleep 22
 echo $(osmosisd q bank balances "$VALIDATOR")
 
 DENOM=$(osmosisd q bank balances "$VALIDATOR" -o json | jq -r '.balances[] | select(.denom | contains("ibc")) | .denom')
-echo $DENOM
+
+
 cat > sample_pool.json <<EOF
 {
         "weights": "1${DENOM},1uosmo",
@@ -29,6 +30,7 @@ POOL_ID=$(osmosisd query gamm pools -o json | jq -r '.pools[-1].id')
 
 # Store the swaprouter contract
 osmosisd tx wasm store scripts/bytecode2/swaprouter.wasm --keyring-backend=test --home=$HOME/.osmosisd --from deployer --chain-id testing --gas 10000000 --fees 25000stake --yes
+
 # get the code id
 sleep 6
 SWAPROUTER_CODE_ID=$(osmosisd query wasm list-code -o json | jq -r '.code_infos[-1].code_id')
@@ -44,6 +46,7 @@ sleep 5
 
 # Store the crosschainswap contract
 osmosisd tx wasm store scripts/bytecode2/crosschain_swaps.wasm --keyring-backend=test --home=$HOME/.osmosisd --from deployer --chain-id testing --gas 10000000 --fees 25000stake --yes
+
 # get the code id
 sleep 6
 CROSSCHAIN_SWAPS_CODE_ID=$(osmosisd query wasm list-code -o json | jq -r '.code_infos[-1].code_id')

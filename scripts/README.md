@@ -25,6 +25,7 @@ The result looks like this
 base_asset: osmo
 quote_asset: stake
 spot_price: "2.000000000000000000"
+
 ```
 
 ## IBC Swap
