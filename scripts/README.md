@@ -25,4 +25,37 @@ The result looks like this
 base_asset: osmo
 quote_asset: stake
 spot_price: "2.000000000000000000"
+
+```
+
+## IBC Swap
+```
+./scripts/ibc_swap/setup.sh
+```
+
+The final result looks like this:
+```
+old balances: [
+  {
+    "denom": "stake",
+    "amount": "9998999959323"
+  },
+  {
+    "denom": "utest",
+    "amount": "100000000000000"
+  }
+], new balances: [
+  {
+    "denom": "ibc/ED07A3391A112B175915CD8FAF43A2DA8E4790EDE12566649D0C2F97716B8518",
+    "amount": "98"
+  },
+  {
+    "denom": "stake",
+    "amount": "9998999949266"
+  },
+  {
+    "denom": "utest",
+    "amount": "100000000000000"
+  }
+]
 ```
