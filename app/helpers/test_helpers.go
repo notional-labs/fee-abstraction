@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -79,6 +80,7 @@ func Setup(t *testing.T, isCheckTx bool, invCheckPeriod uint) *feeapp.FeeAbs {
 func setup(withGenesis bool, invCheckPeriod uint) (*feeapp.FeeAbs, feeapp.GenesisState) {
 	db := dbm.NewMemDB()
 	encCdc := feeapp.MakeEncodingConfig()
+	var emptyWasmOpts []wasm.Option
 	app := feeapp.NewFeeAbs(
 		log.NewNopLogger(),
 		db,
@@ -89,6 +91,7 @@ func setup(withGenesis bool, invCheckPeriod uint) (*feeapp.FeeAbs, feeapp.Genesi
 		invCheckPeriod,
 		encCdc,
 		EmptyAppOptions{},
+		emptyWasmOpts,
 	)
 	if withGenesis {
 		return app, feeapp.NewDefaultGenesisState()
