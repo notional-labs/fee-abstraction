@@ -6,7 +6,6 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	ibcexported "github.com/cosmos/ibc-go/v4/modules/core/exported"
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/keeper"
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/types"
@@ -41,36 +40,12 @@ func (im IBCMiddleware) OnChanOpenInit(
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
-	if err := ValidateChannelParams(ctx, im.keeper, order, portID, channelID); err != nil {
+	appVersion, err := im.IBCModule.OnChanOpenInit(ctx, order, connectionHops, portID, channelID, chanCap, counterparty, versionMetadata.AppVersion)
+	if err != nil {
 		return "", err
 	}
 
-	// Claim channel capability passed back by IBC module
-	if err := im.keeper.ClaimCapability(ctx, channelCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
-		return "", err
-	}
-
-	return version, nil
-}
-
-func ValidateChannelParams(
-	ctx sdk.Context,
-	keeper keeper.Keeper,
-	order channeltypes.Order,
-	portID string,
-	channelID string,
-) error {
-	if order != channeltypes.UNORDERED {
-		return sdkerrors.Wrapf(channeltypes.ErrInvalidChannelOrdering, "expected %s channel, got %s ", channeltypes.UNORDERED, order)
-	}
-
-	// Require portID is the portID profiles module is bound to
-	boundPort := keeper.GetPort(ctx)
-	if boundPort != portID {
-		return sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid port: %s, expected %s", portID, boundPort)
-	}
-
-	return nil
+	return appVersion, nil
 }
 
 // OnChanOpenTry implements the IBCModule interface.
@@ -84,23 +59,12 @@ func (im IBCMiddleware) OnChanOpenTry(
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
-	if err := ValidateChannelParams(ctx, im.keeper, order, portID, channelID); err != nil {
+	appVersion, err := im.IBCModule.OnChanOpenTry(ctx, order, connectionHops, portID, channelID, chanCap, counterparty, versionMetadata.AppVersion)
+	if err != nil {
 		return "", err
 	}
 
-	// Module may have already claimed capability in OnChanOpenInit in the case of crossing hellos
-	// (ie chainA and chainB both call ChanOpenInit before one of them calls ChanOpenTry)
-	// If module can already authenticate the capability then module already owns it so we don't need to claim
-	// Otherwise, module does not have channel capability and we must claim it from IBC
-	if !im.keeper.AuthenticateCapability(ctx, channelCap, host.ChannelCapabilityPath(portID, channelID)) {
-		// Only claim channel capability passed back by IBC module if we do not already own it
-		err := im.keeper.ClaimCapability(ctx, channelCap, host.ChannelCapabilityPath(portID, channelID))
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return counterpartyVersion, nil
+	return appVersion, nil
 }
 
 // OnChanOpenAck implements the IBCModule interface.
@@ -111,7 +75,7 @@ func (im IBCMiddleware) OnChanOpenAck(
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
-	return nil
+	return im.IBCModule.OnChanOpenAck(ctx, portID, channelID, counterpartyChannelID, counterpartyVersion)
 }
 
 // OnChanOpenConfirm implements the IBCModule interface.
@@ -120,7 +84,7 @@ func (im IBCMiddleware) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	return nil
+	return im.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 }
 
 // OnChanCloseInit implements the IBCModule interface.
@@ -130,7 +94,7 @@ func (im IBCMiddleware) OnChanCloseInit(
 	channelID string,
 ) error {
 	// Disallow user-initiated channel closing for channels
-	return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "user cannot close channel")
+	return im.IBCModule.OnChanCloseInit(ctx, portID, channelID)
 }
 
 // OnChanCloseConfirm implements the IBCModule interface.
@@ -139,8 +103,7 @@ func (im IBCMiddleware) OnChanCloseConfirm(
 	portID,
 	channelID string,
 ) error {
-	// no need to implement
-	return nil
+	return im.IBCModule.OnChanCloseConfirm(ctx, portID, channelID)
 }
 
 // OnRecvPacket implements the IBCModule interface.
