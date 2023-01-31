@@ -43,6 +43,8 @@ func (im IBCMiddleware) OnChanOpenInit(
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
+	logger := im.keeper.Logger(ctx)
+	logger.Error("IBCMiddleware OnChanOpenInit")
 	appVersion, err := im.IBCModule.OnChanOpenInit(
 		ctx,
 		order,
@@ -71,6 +73,8 @@ func (im IBCMiddleware) OnChanOpenTry(
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
+	logger := im.keeper.Logger(ctx)
+	logger.Error("IBCMiddleware OnChanOpenTry")
 	appVersion, err := im.IBCModule.OnChanOpenTry(
 		ctx,
 		order,
@@ -96,6 +100,8 @@ func (im IBCMiddleware) OnChanOpenAck(
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
+	logger := im.keeper.Logger(ctx)
+	logger.Error("IBCMiddleware OnChanOpenAck")
 	return im.IBCModule.OnChanOpenAck(ctx, portID, channelID, counterpartyChannelID, counterpartyVersion)
 }
 
@@ -105,6 +111,8 @@ func (im IBCMiddleware) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
+	logger := im.keeper.Logger(ctx)
+	logger.Error("IBCMiddleware OnChanOpenConfirm")
 	return im.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 }
 
@@ -146,6 +154,8 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	logger := im.keeper.Logger(ctx)
+	logger.Error("IBCMiddleware OnAcknowledgementPacket")
 	var ack channeltypes.Acknowledgement
 	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet acknowledgement: %v", err)
@@ -191,6 +201,8 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
+	logger := im.keeper.Logger(ctx)
+	logger.Error("IBCMiddleware OnTimeoutPacket")
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
