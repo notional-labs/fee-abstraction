@@ -191,9 +191,23 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	// TODO: Resend request if timeout
-	// TODO: emit event
-	return nil
+	var data transfertypes.FungibleTokenPacketData
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
+	}
+
+	var memoOsmosis types.OsmosisSpecialMemo
+	if err := json.Unmarshal([]byte(data.Memo), &memoOsmosis); err != nil {
+		// call the underlying callback so transfer module will refund native token to module account
+		return im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
+	}
+
+	// call the underlying callback so transfer module will refund native token to module account
+	if err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer); err != nil {
+		return err
+	}
+
+	return im.keeper.OnTimeoutIbcSwapPacket(ctx, packet, relayer)
 }
 
 //---------------------ICS4Wrapper-----------------------------------------
