@@ -207,7 +207,7 @@ func (im IBCMiddleware) OnTimeoutPacket(
 		return err
 	}
 
-	return im.keeper.OnTimeoutIbcSwapPacket(ctx, packet, relayer)
+	return im.keeper.OnTimeoutIbcSwapPacket(ctx)
 }
 
 //---------------------ICS4Wrapper-----------------------------------------
