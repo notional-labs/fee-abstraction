@@ -62,6 +62,10 @@ func NewKeeper(
 	}
 }
 
+func (k Keeper) GetAppVersion(ctx sdk.Context, portID string, channelID string) (string, bool) {
+	return k.channelKeeper.GetAppVersion(ctx, portID, channelID)
+}
+
 func (k Keeper) GetModuleAddress() sdk.AccAddress {
 	return authtypes.NewModuleAddress(types.ModuleName)
 }

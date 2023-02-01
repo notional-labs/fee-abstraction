@@ -54,26 +54,6 @@ func (am IBCModule) OnChanOpenInit(
 	return version, nil
 }
 
-func ValidateChannelParams(
-	ctx sdk.Context,
-	keeper keeper.Keeper,
-	order channeltypes.Order,
-	portID string,
-	channelID string,
-) error {
-	if order != channeltypes.UNORDERED {
-		return sdkerrors.Wrapf(channeltypes.ErrInvalidChannelOrdering, "expected %s channel, got %s ", channeltypes.UNORDERED, order)
-	}
-
-	// Require portID is the portID profiles module is bound to
-	boundPort := keeper.GetPort(ctx)
-	if boundPort != portID {
-		return sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid port: %s, expected %s", portID, boundPort)
-	}
-
-	return nil
-}
-
 // OnChanOpenTry implements the IBCModule interface.
 func (am IBCModule) OnChanOpenTry(
 	ctx sdk.Context,
@@ -217,5 +197,25 @@ func (am IBCModule) OnTimeoutPacket(
 ) error {
 	// TODO: Resend request if timeout
 	// TODO: emit event
+	return nil
+}
+
+func ValidateChannelParams(
+	ctx sdk.Context,
+	keeper keeper.Keeper,
+	order channeltypes.Order,
+	portID string,
+	channelID string,
+) error {
+	if order != channeltypes.UNORDERED {
+		return sdkerrors.Wrapf(channeltypes.ErrInvalidChannelOrdering, "expected %s channel, got %s ", channeltypes.UNORDERED, order)
+	}
+
+	// Require portID is the portID profiles module is bound to
+	boundPort := keeper.GetPort(ctx)
+	if boundPort != portID {
+		return sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid port: %s, expected %s", portID, boundPort)
+	}
+
 	return nil
 }
