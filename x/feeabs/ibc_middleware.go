@@ -175,6 +175,9 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 		)
 	case *channeltypes.Acknowledgement_Error:
 		// TODO: resent
+		if err := im.keeper.IbcCrossChainSwapFailCallback(ctx); err != nil {
+			return err
+		}
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				types.EventCrossChainSwapError,
@@ -208,7 +211,7 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	if err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer); err != nil {
 		return err
 	}
-	return im.keeper.OnTimeoutIbcSwapPacket(ctx)
+	return im.keeper.IbcCrossChainSwapFailCallback(ctx)
 }
 
 //---------------------ICS4Wrapper-----------------------------------------
