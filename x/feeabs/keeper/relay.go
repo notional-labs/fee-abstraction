@@ -97,6 +97,8 @@ func (k Keeper) OnAcknowledgementIbcOsmosisQueryRequest(ctx sdk.Context, ack cha
 
 // OnTimeOutIbcSwapRequest handle timeout for SwapIbc
 func (k Keeper) OnTimeoutIbcSwapPacket(ctx sdk.Context) error {
+	logger := k.Logger(ctx)
+	logger.Error("IBCMiddleware OnTimeoutPacket call retransfer")
 	return k.transferIBCTokenToOsmosisContract(ctx)
 }
 
@@ -116,13 +118,15 @@ func (k Keeper) transferIBCTokenToOsmosisContract(ctx sdk.Context) error {
 		return err
 	}
 
+	curChainHeight := ctx.BlockHeight()
+
 	transferMsg := transfertypes.MsgTransfer{
 		SourcePort:       transfertypes.PortID,
 		SourceChannel:    params.OsmosisTransferChannel,
 		Token:            token,
 		Sender:           moduleAccountAddress.String(),
 		Receiver:         params.OsmosisSwapContract,
-		TimeoutHeight:    clienttypes.NewHeight(0, 100000000),
+		TimeoutHeight:    clienttypes.NewHeight(0, uint64(curChainHeight+10)),
 		TimeoutTimestamp: uint64(0),
 		Memo:             memo,
 	}
@@ -136,7 +140,9 @@ func (k Keeper) transferIBCTokenToOsmosisContract(ctx sdk.Context) error {
 }
 
 func (k Keeper) executeTransferMsg(ctx sdk.Context, transferMsg *transfertypes.MsgTransfer) (*transfertypes.MsgTransferResponse, error) {
+	logger := k.Logger(ctx)
 	if err := transferMsg.ValidateBasic(); err != nil {
+		logger.Error(fmt.Sprintf("IBCMiddleware OnTimeoutPacket bad msg %s", err.Error()))
 		return nil, fmt.Errorf("bad msg %v", err.Error())
 	}
 	return k.transferKeeper.Transfer(sdk.WrapSDKContext(ctx), transferMsg)

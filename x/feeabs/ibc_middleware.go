@@ -165,12 +165,14 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
+	logger.Error("IBCMiddleware OnAcknowledgementPacket FungibleTokenPacketData")
 
 	var memoOsmosis types.OsmosisSpecialMemo
 	if err := json.Unmarshal([]byte(data.Memo), &memoOsmosis); err != nil {
+		logger.Error("IBCMiddleware OnAcknowledgementPacket memoOsmosis nil")
 		return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
-
+	logger.Error("IBCMiddleware OnAcknowledgementPacket memoOsmosis")
 	if err := im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer); err != nil {
 		return err
 	}
@@ -208,9 +210,11 @@ func (im IBCMiddleware) OnTimeoutPacket(
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
+	logger.Error("IBCMiddleware OnTimeoutPacket memoOsmosis")
 	var memoOsmosis types.OsmosisSpecialMemo
 	if err := json.Unmarshal([]byte(data.Memo), &memoOsmosis); err != nil {
 		// call the underlying callback so transfer module will refund native token to module account
+		logger.Error("IBCMiddleware OnTimeoutPacket no memo")
 		return im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
 	}
 
@@ -218,7 +222,7 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	if err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer); err != nil {
 		return err
 	}
-
+	logger.Error("IBCMiddleware OnTimeoutPacket callback")
 	return im.keeper.OnTimeoutIbcSwapPacket(ctx)
 }
 
