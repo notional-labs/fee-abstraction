@@ -41,10 +41,11 @@ func (p OsmosisQuerySpotPriceRequestPacketData) GetBytes() []byte {
 }
 
 // NewSwapAmountInRoutePacketData create new packet for swap token over ibc.
-func NewSwapAmountInRoutePacketData(poolId uint64, tokenOutDenom string) SwapAmountInRoute {
+func NewSwapAmountInRoutePacketData(inputCoin sdk.Coin, tokenOutDenom string, receiver string) SwapAmountInRoute {
 	return SwapAmountInRoute{
-		PoolId:        poolId,
-		TokenOutDenom: tokenOutDenom,
+		InputCoin:   inputCoin,
+		OutputDenom: tokenOutDenom,
+		Receiver:    receiver,
 	}
 }
 
