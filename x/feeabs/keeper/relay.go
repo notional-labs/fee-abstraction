@@ -95,9 +95,95 @@ func (k Keeper) OnAcknowledgementIbcOsmosisQueryRequest(ctx sdk.Context, ack cha
 	}
 }
 
+// TODO: use TWAP instead of spotprice
+func (k Keeper) handleSendIbcSwapAmountInRoute(ctx sdk.Context, memo []byte) error {
+	params := k.GetParams(ctx)
+	channelID := params.OsmosisSwapChannel
+	k.Logger(ctx).Error("handleSendIbcSwapAmountInRoute send swap")
+	return k.SendIbcSwapAmountInRoute(
+		ctx,
+		memo,
+		types.IBCPortID,
+		channelID,
+	)
+}
+
+// Send request for swap SwapAmountInRoute over IBC
+func (k Keeper) SendIbcSwapAmountInRoute(
+	ctx sdk.Context,
+	packetData []byte,
+	sourcePort string,
+	sourceChannel string,
+) error {
+	// Get source channel endpoint
+	sourceChannelEnd, found := k.channelKeeper.GetChannel(ctx, sourcePort, sourceChannel)
+	if !found {
+		return sdkerrors.Wrapf(channeltypes.ErrChannelNotFound, "port ID (%s) channel ID (%s)", sourcePort, sourceChannel)
+	}
+
+	// Get counter-party chain endpoint infor
+	destinationPort := sourceChannelEnd.GetCounterparty().GetPortID()
+	destinationChannel := sourceChannelEnd.GetCounterparty().GetChannelID()
+
+	// Get next sequence
+	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, sourcePort, sourceChannel)
+	if !found {
+		return sdkerrors.Wrapf(
+			channeltypes.ErrSequenceSendNotFound,
+			"source port: %s, source channel: %s", sourcePort, sourceChannel,
+		)
+	}
+
+	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(sourcePort, sourceChannel))
+	if !ok {
+		return sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
+	}
+
+	timeoutHeight := clienttypes.NewHeight(0, 100000000)
+	timeoutTimestamp := uint64(0)
+
+	// Create the IBC packet
+	packet := channeltypes.NewPacket(
+		packetData,
+		sequence,
+		sourcePort,
+		sourceChannel,
+		destinationPort,
+		destinationChannel,
+		timeoutHeight,
+		timeoutTimestamp,
+	)
+
+	// Send the IBC packet
+	return k.channelKeeper.SendPacket(ctx, channelCap, packet)
+}
+
+// OnAcknowledgementIbcSwapAmountInRoute handle Acknowledgement for SwapAmountInRoute packet
+func (k Keeper) OnAcknowledgementIbcSwapAmountInRoute(ctx sdk.Context, ack channeltypes.Acknowledgement) error {
+	switch dispatchedAck := ack.Response.(type) {
+	case *channeltypes.Acknowledgement_Error:
+		_ = dispatchedAck.Error
+		return nil
+	case *channeltypes.Acknowledgement_Result:
+		// Unmarshal dispatchedAck result
+
+		// TODO: implement logic swap success
+		return nil
+	default:
+		// The counter-party module doesn't implement the correct acknowledgment format
+		return errors.New("invalid acknowledgment format")
+	}
+}
+
 // OnTimeOutIbcSwapRequest handle timeout for SwapIbc
 func (k Keeper) IbcCrossChainSwapFailCallback(ctx sdk.Context) error {
 	return k.transferIBCTokenToOsmosisContract(ctx)
+}
+
+// OnTimeOutIbcSwapRequest handle timeout for SwapIbc
+func (k Keeper) IbcCrossChainSwapSuccessCallback(ctx sdk.Context, memo []byte) error {
+	k.Logger(ctx).Error("IbcCrossChainSwapSuccessCallback")
+	return k.handleSendIbcSwapAmountInRoute(ctx, memo)
 }
 
 func (k Keeper) transferIBCTokenToOsmosisContract(ctx sdk.Context) error {
