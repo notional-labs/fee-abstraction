@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,6 +33,13 @@ func TestParseMsgToMemo(t *testing.T) {
 	mockReceiver := "cosmos123456789"
 
 	//TODO: need to check assert msg
-	_, err := keeper.ParseMsgToMemo(msgSwap, mockAddress, mockReceiver)
+	memo, err := keeper.ParseMsgToMemo(msgSwap, mockAddress, mockReceiver)
 	require.NoError(t, err)
+
+	var memoOsmosis types.OsmosisSpecialMemo
+	_ = json.Unmarshal([]byte(memo), &memoOsmosis)
+	fmt.Printf("%v\n", memoOsmosis.Wasm)
+	fmt.Printf("%v\n", memoOsmosis.Wasm["msg"])
+
+	require.True(t, false)
 }

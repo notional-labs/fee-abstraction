@@ -2,6 +2,7 @@
 
 CHANNEL_ID="channel-0"
 export VALIDATOR=$(osmosisd keys show validator1 -a --keyring-backend test --home=$HOME/.osmosisd)
+VALIDATOR=osmo1e3634mdfmdgxz4fxgluwzxat6t9h682gdtuu9u
 echo $VALIDATOR
 
 hermes --config scripts/relayer_hermes/config.toml create channel --a-chain testing --b-chain feeappd-t1 --a-port transfer --b-port transfer --new-client-connection --yes
@@ -57,6 +58,9 @@ feeacc=$(feeappd keys show feeacc --keyring-backend test -a)
 balances=$(feeappd query bank balances "$feeacc" -o json | jq '.balances')
 
 MEMO='{"wasm":{"contract":"'$CROSSCHAIN_SWAPS_ADDRESS'","msg":{"osmosis_swap":{"input_coin":{"denom":"'$DENOM'","amount":"100"},"output_denom":"uosmo","slippage":{"twap":{"slippage_percentage":"20","window_seconds":10}},"receiver":"'$feeacc'","on_failed_delivery":"do_nothing"}}}}'
+
+
+MEMO='{"wasm":{"contract":"'$CROSSCHAIN_SWAPS_ADDRESS'","msg":{"osmosis_swap":{"input_coin":{"denom":"stake","amount":"100"},"output_denom":"uosmo","slippage":{"twap":{"slippage_percentage":"20","window_seconds":10}},"receiver":"'$feeacc'","on_failed_delivery":"do_nothing"}}}}'
 
 feeappd tx ibc-transfer transfer transfer $CHANNEL_ID $CROSSCHAIN_SWAPS_ADDRESS 100stake \
     --from feeacc --keyring-backend test --chain-id feeappd-t1 -y \

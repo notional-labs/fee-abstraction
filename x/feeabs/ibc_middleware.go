@@ -2,6 +2,7 @@ package feeabs
 
 import (
 	"encoding/json"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -146,27 +147,37 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	logger := im.keeper.Logger(ctx)
+	logger.Error("OnAcknowledgementPacket")
 	var ack channeltypes.Acknowledgement
 	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet acknowledgement: %v", err)
 	}
 
+	logger.Error("OnAcknowledgementPacket FungibleTokenPacketData")
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
+	logger.Error("OnAcknowledgementPacket OsmosisSpecialMemo")
 	var memoOsmosis types.OsmosisSpecialMemo
 	if err := json.Unmarshal([]byte(data.Memo), &memoOsmosis); err != nil {
 		return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
 
+	logger.Error("OnAcknowledgementPacket OsmosisSpecialMemo pass")
 	if err := im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer); err != nil {
 		return err
 	}
+	logger.Error("OnAcknowledgementPacket OsmosisSpecialMemo switch")
 	switch resp := ack.Response.(type) {
 	case *channeltypes.Acknowledgement_Result:
 		// TODO: sent tx swap
+		logger.Error("Acknowledgement_Result")
+		if err := im.keeper.IbcCrossChainSwapSuccessCallback(ctx, []byte(data.Memo)); err != nil {
+			return err
+		}
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				types.EventCrossChainSwapSuccess,
@@ -175,6 +186,7 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 		)
 	case *channeltypes.Acknowledgement_Error:
 		// TODO: resent
+		logger.Error(fmt.Sprintf("Acknowledgement_Error %s", resp.Error))
 		if err := im.keeper.IbcCrossChainSwapFailCallback(ctx); err != nil {
 			return err
 		}
