@@ -25,3 +25,4 @@ osmosisd q wasm contract-state smart osmo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcms
 #hermes --config scripts/relayer_hermes/config.toml create channel --a-chain testing --b-chain feeappd-t1 --a-port wasm.osmo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sq2r9g9 --b-port feeabs --new-client-connection --yes
 #osmosisd tx gamm create-pool --pool-file scripts/pool.json --from validator1 --keyring-backend=test --home=$HOME/.osmosisd/validator1 --chain-id testing --yes
 #feeappd tx feeabs interchain-query osmo1ekqk6ms4fqf2mfeazju4pcu3jq93lcdsfl0tah --keyring-backend test --chain-id feeappd-t1 --from feeacc
+#feeappd tx feeabs interchain-query 1676624760 --keyring-backend test --chain-id feeappd-t1 --from feeacc

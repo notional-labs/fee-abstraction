@@ -68,7 +68,7 @@ func NewSwapOverChainCmd() *cobra.Command {
 
 func NewInterchainQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "interchain-query [address]",
+		Use:  "interchain-query [start_time]",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -266,14 +268,23 @@ func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context, hostChainConfig types.Hos
 
 func (k Keeper) handleInterchainQuery(ctx sdk.Context, address string) error {
 	// params := k.GetParams(ctx)
+	timeUnix, _ := strconv.ParseInt(address, 10, 64)
+	startTime := time.Unix(timeUnix, 0)
+	k.Logger(ctx).Error(fmt.Sprintf("startTime: %v", startTime))
 	channelID := "channel-0"
-	path := "/osmosis.gamm.v2.Query/SpotPrice"
-	address = "osmo1ekqk6ms4fqf2mfeazju4pcu3jq93lcdsfl0tah"
+	path := "/osmosis.twap.v1beta1.Query/ArithmeticTwapToNow"
 
-	q := types.OsmosisQuerySpotPriceRequestPacketData{
-		PoolId:          uint64(1),
-		BaseAssetDenom:  "uosmo",
-		QuoteAssetDenom: "uatom",
+	// q := types.OsmosisQuerySpotPriceRequestPacketData{
+	// 	PoolId:          uint64(1),
+	// 	BaseAssetDenom:  "uosmo",
+	// 	QuoteAssetDenom: "uatom",
+	// }
+
+	q := types.QueryArithmeticTwapToNowRequest{
+		PoolId:     uint64(1),
+		BaseAsset:  "uosmo",
+		QuoteAsset: "uatom",
+		StartTime:  startTime,
 	}
 
 	data := k.cdc.MustMarshal(&q)
