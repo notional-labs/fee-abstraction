@@ -187,7 +187,10 @@ func (am IBCModule) OnAcknowledgementPacket(
 		am.keeper.IteraterHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
 			index++
 			if !ICQResponses.Respones[index].Success {
-				am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+				err := am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+				if err != nil {
+					return
+				}
 				return false
 			}
 			twapRate, err := am.keeper.GetDecTWAPFromBytes(ICQResponses.Respones[index].Data)
@@ -206,7 +209,10 @@ func (am IBCModule) OnAcknowledgementPacket(
 		)
 	case *channeltypes.Acknowledgement_Error:
 		am.keeper.IteraterHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
-			am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			err := am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			if err != nil {
+				return
+			}
 			return false
 		})
 

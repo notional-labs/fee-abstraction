@@ -60,7 +60,10 @@ func (k Keeper) executeAllHostChainTWAPQuery(ctx sdk.Context) {
 	k.IteraterHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
 		err := k.handleOsmosisIbcQuery(ctx, hostZoneConfig)
 		if err != nil {
-			k.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			e := k.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			if e != nil {
+				return
+			}
 		}
 
 		return false
@@ -83,7 +86,10 @@ func (k Keeper) executeAllHostChainSwap(ctx sdk.Context) {
 		}
 
 		if err != nil {
-			k.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			e := k.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			if e != nil {
+				return
+			}
 		}
 
 		return false
