@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	UpdateClientProposalHandler = govclient.NewProposalHandler(cli.NewCmdSubmitAddHostZoneProposal, emptyRestHandler)
+	UpdateAddHostZoneClientProposalHandler    = govclient.NewProposalHandler(cli.NewCmdSubmitAddHostZoneProposal, emptyRestHandler)
+	UpdateDeleteHostZoneClientProposalHandler = govclient.NewProposalHandler(cli.NewCmdSubmitDeleteHostZoneProposal, emptyRestHandler)
 )
 
 // NewAddHostZoneProposal defines the add host zone proposal handler
@@ -27,6 +28,17 @@ func NewAddHostZoneProposal(k keeper.Keeper) govtypes.Handler {
 		case *types.AddHostZoneProposal:
 			return k.AddHostZoneProposal(ctx, c)
 		// TODO : add remove host zone here.
+		default:
+			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized ibc proposal content type: %T", c)
+		}
+	}
+}
+
+func NewDeleteHostZoneProposal(k keeper.Keeper) govtypes.Handler {
+	return func(ctx sdk.Context, content govtypes.Content) error {
+		switch c := content.(type) {
+		case *types.DeleteHostZoneProposal:
+			return k.DeleteHostZoneProposal(ctx, c)
 		default:
 			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized ibc proposal content type: %T", c)
 		}
