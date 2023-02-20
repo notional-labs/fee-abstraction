@@ -140,6 +140,7 @@ var (
 			ibcclientclient.UpgradeProposalHandler,
 			feeabsmodule.UpdateAddHostZoneClientProposalHandler,
 			feeabsmodule.UpdateDeleteHostZoneClientProposalHandler,
+			feeabsmodule.UpdateSetHostZoneClientProposalHandler,
 		),
 		params.AppModuleBasic{},
 		crisis.AppModuleBasic{},
@@ -404,6 +405,7 @@ func NewFeeAbs(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(feeabstypes.RouterKey, feeabsmodule.NewAddHostZoneProposal(app.FeeabsKeeper)).
 		AddRoute(feeabstypes.RouterKey, feeabsmodule.NewDeleteHostZoneProposal(app.FeeabsKeeper))
+	AddRoute(feeabstypes.RouterKey, feeabsmodule.NewSetHostZoneProposal(app.FeeabsKeeper))
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec,

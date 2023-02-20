@@ -45,6 +45,17 @@ func NewDeleteHostZoneProposal(k keeper.Keeper) govtypes.Handler {
 	}
 }
 
+func NewSetHostZoneProposal(k keeper.Keeper) govtypes.Handler {
+	return func(ctx sdk.Context, content govtypes.Content) error {
+		switch c := content.(type) {
+		case *types.SetHostZoneProposal:
+			return k.SetHostZoneProposal(ctx, c)
+		default:
+			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized ibc proposal content type: %T", c)
+		}
+	}
+}
+
 // TODO : support this @Gnad @Ducnt.
 func emptyRestHandler(client.Context) govrest.ProposalRESTHandler {
 	return govrest.ProposalRESTHandler{

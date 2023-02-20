@@ -32,3 +32,17 @@ func (k Keeper) DeleteHostZoneProposal(ctx sdk.Context, p *types.DeleteHostZoneP
 
 	return nil
 }
+
+func (k Keeper) SetHostZoneProposal(ctx sdk.Context, p *types.SetHostZoneProposal) error {
+	_, err := k.GetHostZoneConfig(ctx, p.HostChainConfig.IbcDenom)
+	if err == nil {
+		return types.ErrHostZoneConfigNotFound
+	}
+
+	err = k.SetHostZoneConfig(ctx, p.HostChainConfig.IbcDenom, *p.HostChainConfig)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
