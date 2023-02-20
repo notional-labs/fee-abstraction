@@ -185,19 +185,20 @@ func (am IBCModule) OnAcknowledgementPacket(
 
 		index := 0
 		am.keeper.IterateHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
-			if !ICQResponses.Respones[index].Success {
+			IcqRes := ICQResponses.Respones[index]
+			index++
+
+			if !IcqRes.Success {
 				am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
-				index++
 				return false
 			}
 
-			twapRate, err := am.keeper.GetDecTWAPFromBytes(ICQResponses.Respones[index].Data)
+			twapRate, err := am.keeper.GetDecTWAPFromBytes(IcqRes.Data)
 			if err != nil {
-				index++
 				return false
 			}
 			am.keeper.SetTwapRate(ctx, hostZoneConfig.IbcDenom, twapRate)
-			index++
+
 			return false
 		})
 
