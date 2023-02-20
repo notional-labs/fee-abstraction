@@ -77,8 +77,6 @@ func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, twapReqs []types.QueryA
 // Send request for query state over IBC
 func (k Keeper) SendInterchainQuery(
 	ctx sdk.Context,
-	// path string,
-	// data []byte,
 	reqs []types.InterchainQueryRequest,
 	sourcePort string,
 	sourceChannel string,
@@ -105,13 +103,6 @@ func (k Keeper) SendInterchainQuery(
 	if !ok {
 		return 0, sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
 	}
-
-	// reqs := []types.InterchainQueryRequest{
-	// 	{
-	// 		Data: data,
-	// 		Path: path,
-	// 	},
-	// }
 
 	packetData := types.NewInterchainQueryRequestPacket(reqs)
 
@@ -247,14 +238,12 @@ func (k Keeper) executeTransferMsg(ctx sdk.Context, transferMsg *transfertypes.M
 func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context) {
 	// TODO: it should be a chain param
 	startTime := ctx.BlockTime().Add(-time.Minute * 5)
-
-	k.Logger(ctx).Error(fmt.Sprintf("Start time: %v", startTime.Unix()))
+	k.Logger(ctx).Info(fmt.Sprintf("Start time: %v", startTime.Unix()))
 
 	params := k.GetParams(ctx)
 	channelID := params.OsmosisQueryChannel
 
 	var reqs []types.QueryArithmeticTwapToNowRequest
-
 	k.IterateHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
 		req := types.NewQueryArithmeticTwapToNowRequest(
 			hostZoneConfig.PoolId,
