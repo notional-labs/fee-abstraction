@@ -163,6 +163,10 @@ func (am IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	fmt.Println("==============ack================")
+	fmt.Println(string(acknowledgement))
+	fmt.Println("==============ack================")
+
 	var ack channeltypes.Acknowledgement
 	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet acknowledgement: %v", err)
@@ -176,6 +180,10 @@ func (am IBCModule) OnAcknowledgementPacket(
 		),
 	)
 
+	fmt.Println("==============ack================")
+	fmt.Println(ack)
+	fmt.Println("==============ack================")
+
 	switch resp := ack.Response.(type) {
 	case *channeltypes.Acknowledgement_Result:
 		ICQResponses, err := am.keeper.UnmarshalPacketBytesToICQtResponses(ack.GetResult())
@@ -183,8 +191,12 @@ func (am IBCModule) OnAcknowledgementPacket(
 			return err
 		}
 
+		fmt.Println("==============ack================")
+		fmt.Println(ICQResponses)
+		fmt.Println("==============ack================")
+
 		index := 0
-		am.keeper.IteraterHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
+		am.keeper.IterateHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
 			index++
 			if !ICQResponses.Respones[index].Success {
 				err := am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
@@ -193,6 +205,11 @@ func (am IBCModule) OnAcknowledgementPacket(
 				}
 				return false
 			}
+
+			fmt.Println("==============price================")
+			fmt.Println(string(ICQResponses.Respones[index].Data))
+			fmt.Println("==============price================")
+
 			twapRate, err := am.keeper.GetDecTWAPFromBytes(ICQResponses.Respones[index].Data)
 			if err != nil {
 				return false
@@ -208,11 +225,8 @@ func (am IBCModule) OnAcknowledgementPacket(
 			),
 		)
 	case *channeltypes.Acknowledgement_Error:
-		am.keeper.IteraterHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
-			err := am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
-			if err != nil {
-				return
-			}
+		am.keeper.IterateHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
+			am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
 			return false
 		})
 

@@ -395,6 +395,23 @@ func NewFeeAbs(
 		scopedIBCKeeper,
 	)
 
+	app.FeeabsKeeper = feeabskeeper.NewKeeper(
+		appCodec,
+		keys[feeabstypes.StoreKey],
+		keys[feeabstypes.MemStoreKey], // TODO: Need to re-check, do we need this memKey?
+		app.GetSubspace(feeabstypes.ModuleName),
+		app.StakingKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.TransferKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedFeeabsKeeper,
+	)
+
+	feeabsModule := feeabsmodule.NewAppModule(appCodec, app.FeeabsKeeper)
+	feeabsIBCModule := feeabsmodule.NewIBCModule(appCodec, app.FeeabsKeeper)
+
 	// register the proposal types
 	govRouter := govtypes.NewRouter()
 	govRouter.
@@ -443,23 +460,6 @@ func NewFeeAbs(
 	)
 	icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
-
-	app.FeeabsKeeper = feeabskeeper.NewKeeper(
-		appCodec,
-		keys[feeabstypes.StoreKey],
-		keys[feeabstypes.MemStoreKey], // TODO: Need to re-check, do we need this memKey?
-		app.GetSubspace(feeabstypes.ModuleName),
-		app.StakingKeeper,
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.TransferKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		scopedFeeabsKeeper,
-	)
-
-	feeabsModule := feeabsmodule.NewAppModule(appCodec, app.FeeabsKeeper)
-	feeabsIBCModule := feeabsmodule.NewIBCModule(appCodec, app.FeeabsKeeper)
 
 	// create evidence keeper with router
 	evidenceKeeper := evidencekeeper.NewKeeper(
