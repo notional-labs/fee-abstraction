@@ -251,7 +251,7 @@ func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context) {
 	k.IterateHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
 		err := k.SendOsmosisQueryRequest(ctx, hostZoneConfig.PoolId, params.NativeIbcedInOsmosis, "uosmo", startTime, types.IBCPortID, channelID)
 		if err != nil {
-			k.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			k.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
 		}
 		return false
 	})

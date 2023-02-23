@@ -226,7 +226,7 @@ func (am IBCModule) OnAcknowledgementPacket(
 		)
 	case *channeltypes.Acknowledgement_Error:
 		am.keeper.IterateHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
-			am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
 			return false
 		})
 

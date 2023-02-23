@@ -19,6 +19,7 @@ import (
 var (
 	UpdateAddHostZoneClientProposalHandler    = govclient.NewProposalHandler(cli.NewCmdSubmitAddHostZoneProposal, emptyRestHandler)
 	UpdateDeleteHostZoneClientProposalHandler = govclient.NewProposalHandler(cli.NewCmdSubmitDeleteHostZoneProposal, emptyRestHandler)
+	UpdateSetHostZoneClientProposalHandler    = govclient.NewProposalHandler(cli.NewCmdSubmitSetHostZoneProposal, emptyRestHandler)
 )
 
 // NewAddHostZoneProposal defines the add host zone proposal handler
