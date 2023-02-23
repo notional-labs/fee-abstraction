@@ -395,6 +395,19 @@ func NewFeeAbs(
 		scopedIBCKeeper,
 	)
 
+	// Create Transfer Keepers
+	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+		appCodec,
+		keys[ibctransfertypes.StoreKey],
+		app.GetSubspace(ibctransfertypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+		scopedTransferKeeper,
+	)
+
 	app.FeeabsKeeper = feeabskeeper.NewKeeper(
 		appCodec,
 		keys[feeabstypes.StoreKey],
