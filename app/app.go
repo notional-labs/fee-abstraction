@@ -436,18 +436,7 @@ func NewFeeAbs(
 		AddRoute(feeabstypes.RouterKey, feeabsmodule.NewAddHostZoneProposal(app.FeeabsKeeper)).
 		AddRoute(feeabstypes.RouterKey, feeabsmodule.NewDeleteHostZoneProposal(app.FeeabsKeeper)).
 		AddRoute(feeabstypes.RouterKey, feeabsmodule.NewSetHostZoneProposal(app.FeeabsKeeper))
-	// Create Transfer Keepers
-	app.TransferKeeper = ibctransferkeeper.NewKeeper(
-		appCodec,
-		keys[ibctransfertypes.StoreKey],
-		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		app.AccountKeeper,
-		app.BankKeeper,
-		scopedTransferKeeper,
-	)
+
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
 	transferIBCModule := transfer.NewIBCModule(app.TransferKeeper)
 
