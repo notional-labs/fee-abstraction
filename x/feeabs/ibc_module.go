@@ -194,7 +194,7 @@ func (am IBCModule) OnAcknowledgementPacket(
 			index++
 
 			if !IcqRes.Success {
-				am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+				am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
 				return false
 			}
 

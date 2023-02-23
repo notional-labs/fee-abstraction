@@ -22,33 +22,14 @@ var (
 	UpdateSetHostZoneClientProposalHandler    = govclient.NewProposalHandler(cli.NewCmdSubmitSetHostZoneProposal, emptyRestHandler)
 )
 
-// NewAddHostZoneProposal defines the add host zone proposal handler
-func NewAddHostZoneProposal(k keeper.Keeper) govtypes.Handler {
+// NewHostZoneProposal defines the add host zone proposal handler
+func NewHostZoneProposal(k keeper.Keeper) govtypes.Handler {
 	return func(ctx sdk.Context, content govtypes.Content) error {
 		switch c := content.(type) {
 		case *types.AddHostZoneProposal:
 			return k.AddHostZoneProposal(ctx, c)
-		// TODO : add remove host zone here.
-		default:
-			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized ibc proposal content type: %T", c)
-		}
-	}
-}
-
-func NewDeleteHostZoneProposal(k keeper.Keeper) govtypes.Handler {
-	return func(ctx sdk.Context, content govtypes.Content) error {
-		switch c := content.(type) {
 		case *types.DeleteHostZoneProposal:
 			return k.DeleteHostZoneProposal(ctx, c)
-		default:
-			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized ibc proposal content type: %T", c)
-		}
-	}
-}
-
-func NewSetHostZoneProposal(k keeper.Keeper) govtypes.Handler {
-	return func(ctx sdk.Context, content govtypes.Content) error {
-		switch c := content.(type) {
 		case *types.SetHostZoneProposal:
 			return k.SetHostZoneProposal(ctx, c)
 		default:
