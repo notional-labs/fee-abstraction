@@ -129,7 +129,7 @@ func (k Keeper) GetChannelId(ctx sdk.Context) string {
 }
 
 // TODO: need to test this function
-func (k Keeper) UnmarshalPacketBytesToICQtResponses(bz []byte) (types.IcqRespones, error) {
+func (k Keeper) UnmarshalPacketBytesToICQResponses(bz []byte) (types.IcqRespones, error) {
 	var res types.IcqRespones
 	err := json.Unmarshal(bz, &res)
 	if err != nil {
@@ -198,13 +198,7 @@ func (k Keeper) transferIBCTokenToHostChainWithMiddlewareMemo(ctx sdk.Context, h
 // TODO: don't use if/else logic.
 func (k Keeper) transferIBCTokenToOsmosisChainWithIBCHookMemo(ctx sdk.Context, hostChainConfig types.HostChainFeeAbsConfig) error {
 	moduleAccountAddress := k.GetFeeAbsModuleAddress()
-	fmt.Println("============memo msg=============")
-	fmt.Println(hostChainConfig)
-	fmt.Println(moduleAccountAddress)
 	token := k.bk.GetBalance(ctx, moduleAccountAddress, hostChainConfig.IbcDenom)
-	fmt.Println(token)
-	fmt.Println("============memo msg=============")
-
 	nativeDenomIBCedInOsmosis := k.GetParams(ctx).NativeIbcedInOsmosis
 
 	// TODO: don't use it in product version.
@@ -217,10 +211,6 @@ func (k Keeper) transferIBCTokenToOsmosisChainWithIBCHookMemo(ctx sdk.Context, h
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("============memo msg=============")
-	fmt.Println(memo)
-	fmt.Println("============memo msg=============")
 
 	transferMsg := transfertypes.MsgTransfer{
 		SourcePort:       transfertypes.PortID,
@@ -250,7 +240,7 @@ func (k Keeper) executeTransferMsg(ctx sdk.Context, transferMsg *transfertypes.M
 }
 
 // TODO: use TWAP instead of spotprice
-func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context) {
+func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context) error {
 	// TODO: `time.Minute * 5` it should be a chain param
 	startTime := ctx.BlockTime().Add(-time.Minute * 5)
 	k.Logger(ctx).Info(fmt.Sprintf("Start time: %v", startTime.Unix()))
@@ -258,6 +248,7 @@ func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context) {
 	params := k.GetParams(ctx)
 
 	var reqs []types.QueryArithmeticTwapToNowRequest
+	var queryChannel string
 	k.IterateHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
 		req := types.NewQueryArithmeticTwapToNowRequest(
 			hostZoneConfig.PoolId,
@@ -266,20 +257,13 @@ func (k Keeper) handleOsmosisIbcQuery(ctx sdk.Context) {
 			startTime,
 		)
 		reqs = append(reqs, req)
-		fmt.Println("=======iter===========")
-		fmt.Println(hostZoneConfig)
-		fmt.Println("=======iter===========")
-		fmt.Println("=======req===========")
-		fmt.Println(req)
-		fmt.Println("=======req===========")
-
-		err := k.SendOsmosisQueryRequest(ctx, reqs, types.IBCPortID, hostZoneConfig.OsmosisQueryChannel)
-		if err != nil {
-			fmt.Println("=======err===========")
-			fmt.Println(err)
-			fmt.Println("=======err===========")
-
-		}
+		queryChannel = hostZoneConfig.OsmosisQueryChannel
 		return false
 	})
+	err := k.SendOsmosisQueryRequest(ctx, reqs, types.IBCPortID, queryChannel)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
