@@ -156,12 +156,6 @@ func (k Keeper) GetDecTWAPFromBytes(bz []byte) (sdk.Dec, error) {
 
 func (k Keeper) transferIBCTokenToHostChainWithMiddlewareMemo(ctx sdk.Context, hostChainConfig types.HostChainFeeAbsConfig) error {
 	moduleAccountAddress := k.GetFeeAbsModuleAddress()
-
-	fmt.Println("==============")
-	fmt.Println(hostChainConfig)
-	fmt.Println(hostChainConfig.IbcDenom)
-	fmt.Println("==============")
-
 	token := k.bk.GetBalance(ctx, moduleAccountAddress, hostChainConfig.IbcDenom)
 	nativeDenomIBCedInOsmosis := k.GetParams(ctx).NativeIbcedInOsmosis
 

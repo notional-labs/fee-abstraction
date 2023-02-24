@@ -190,7 +190,10 @@ func (am IBCModule) OnAcknowledgementPacket(
 			index++
 
 			if !IcqRes.Success {
-				am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+				err := am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+				if err != nil {
+					am.keeper.Logger(ctx).Error(fmt.Sprintf("Failed to frozem host zone %s", err.Error()))
+				}
 				return false
 			}
 
@@ -214,7 +217,11 @@ func (am IBCModule) OnAcknowledgementPacket(
 		)
 	case *channeltypes.Acknowledgement_Error:
 		am.keeper.IterateHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
-			am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			err := am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			if err != nil {
+				am.keeper.Logger(ctx).Error(fmt.Sprintf("Failed to frozem host zone %s", err.Error()))
+			}
+
 			return false
 		})
 		am.keeper.Logger(ctx).Error(fmt.Sprintf("failed to send packet ICQ request %v", resp.Error))
