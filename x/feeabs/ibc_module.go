@@ -163,11 +163,6 @@ func (am IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-
-	fmt.Println("======twap===========")
-	fmt.Println(string(acknowledgement))
-	fmt.Println("=======twap==========")
-
 	var ack channeltypes.Acknowledgement
 	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet acknowledgement: %v", err)
@@ -183,8 +178,9 @@ func (am IBCModule) OnAcknowledgementPacket(
 
 	switch resp := ack.Response.(type) {
 	case *channeltypes.Acknowledgement_Result:
-		ICQResponses, err := am.keeper.UnmarshalPacketBytesToICQtResponses(ack.GetResult())
+		ICQResponses, err := am.keeper.UnmarshalPacketBytesToICQResponses(ack.GetResult())
 		if err != nil {
+			am.keeper.Logger(ctx).Error(fmt.Sprintf("Failed to unmarshal ICQ responses %s", err.Error()))
 			return err
 		}
 
@@ -194,9 +190,9 @@ func (am IBCModule) OnAcknowledgementPacket(
 			index++
 
 			if !IcqRes.Success {
-				err := am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+				err := am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
 				if err != nil {
-					return
+					am.keeper.Logger(ctx).Error(fmt.Sprintf("Failed to frozem host zone %s", err.Error()))
 				}
 				return false
 			}
@@ -205,17 +201,13 @@ func (am IBCModule) OnAcknowledgementPacket(
 			if err != nil {
 				return false
 			}
-			fmt.Println("======twap===========")
-			fmt.Println(twapRate)
-			fmt.Println("=======twap==========")
-
+			am.keeper.Logger(ctx).Info(fmt.Sprintf("TwapRate %v", twapRate))
 			am.keeper.SetTwapRate(ctx, hostZoneConfig.IbcDenom, twapRate)
-			fmt.Println("======twap=rate==========")
-			fmt.Println(am.keeper.GetTwapRate(ctx, hostZoneConfig.IbcDenom))
-			fmt.Println("=======twap=rate=========")
 
 			return false
 		})
+
+		am.keeper.Logger(ctx).Info("packet ICQ request successfully")
 
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
@@ -225,12 +217,14 @@ func (am IBCModule) OnAcknowledgementPacket(
 		)
 	case *channeltypes.Acknowledgement_Error:
 		am.keeper.IterateHostZone(ctx, func(hostZoneConfig types.HostChainFeeAbsConfig) (stop bool) {
-			err := am.keeper.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
+			err := am.keeper.FronzenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
 			if err != nil {
-				return
+				am.keeper.Logger(ctx).Error(fmt.Sprintf("Failed to frozem host zone %s", err.Error()))
 			}
+
 			return false
 		})
+		am.keeper.Logger(ctx).Error(fmt.Sprintf("failed to send packet ICQ request %v", resp.Error))
 
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
