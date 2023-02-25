@@ -65,23 +65,23 @@ func noOp(i interface{}) error {
 // 	return nil
 // }
 
-func validateChannelID(i interface{}) error {
-	_, ok := i.(string)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
+// func validateChannelID(i interface{}) error {
+// 	_, ok := i.(string)
+// 	if !ok {
+// 		return fmt.Errorf("invalid parameter type: %T", i)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func validateOsmosisQueryContract(i interface{}) error {
-	_, ok := i.(string)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
+// func validateOsmosisQueryContract(i interface{}) error {
+// 	_, ok := i.(string)
+// 	if !ok {
+// 		return fmt.Errorf("invalid parameter type: %T", i)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // func validatePoolID(i interface{}) error {
 // 	_, ok := i.(uint64)
