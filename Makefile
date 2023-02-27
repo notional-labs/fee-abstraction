@@ -127,3 +127,10 @@ proto-image-push:
 	docker push $(protoImageName)
 
 .PHONY: proto-all proto-gen proto-format proto-lint proto-check-breaking 
+
+###############################################################################
+###                                Querygen                                 ###
+###############################################################################
+
+run-querygen:
+	@go run cmd/querygen/main.go
