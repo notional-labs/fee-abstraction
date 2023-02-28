@@ -63,7 +63,7 @@ We use osmosis's ibc hook feature to do this. We basically ibc transfer to the o
 
 ### OsmosisTwapExchangeRate
 
-OsmosisTwapExchangeRate is fetched every block. In `begin block` (which runs for every block), we continuously send OsmosisIBCTwapQuery to Fee absctraction contract deployed on Osmosis.
+OsmosisTwapExchangeRate is fetched at the end of every epoch. 
 
 The process of pulling Twap data and update exchange rate :
 
@@ -72,39 +72,6 @@ The process of pulling Twap data and update exchange rate :
 ### ChannelID
 
 ### HostChainChainConfig
-
-## Messages
-
-### Msg/SendQueryIbcDenomTWAP
-
-```
-message MsgSendQueryIbcDenomTWAP {
-    string from_address = 1;
-    string ibc_denom = 2;
-    google.protobuf.Timestamp start_time = 3 [
-    (gogoproto.nullable) = false,
-    (gogoproto.stdtime) = true,
-    (gogoproto.moretags) = "yaml:\"start_time\""
-  ];
-}
-```
-
-### Msg/SwapCrossChain
-
-```
-message MsgSwapCrossChain {
-    string from_address = 1;
-    string ibc_denom = 2;
-}
-```
-
-## Events
-
-## Msg Server
-
-### MsgSendQueryIbcDenomTWAP
-
-### MsgSwapCrossChain
 
 ## Client
 
@@ -139,24 +106,6 @@ feeappd query feeabs module-balances [flags]
 The ``osmo-arithmetic-twap`` command allow users to query Osmosis twap for an ibc denom.
 ```
 feeappd query feeabs osmo-arithmetic-twap [ibc-denom] [flags]
-```
-
-#### Transactions
-The ``tx`` commands allow users to interact with the ``feeabs`` module.
-```
-feeappd tx feeabs -h
-```
-
-##### query-osmosis-twap
-The ``query-osmosis-twap`` commands allow users to send an interchain query for Osmosis twap of an ibc denom with a start time.
-```
-feeappd tx feeabs query-osmosis-twap [ibc-denom] [start-time] [flags]
-```
-
-##### swap
-The ``swap`` commands allow users to trigger the process of swap all ibc denom to native token using Osmosis ``ibc hooks`` module and ``swap router`` contract.
-```
-feeappd tx feeabs swap [flags]
 ```
 
 ### gRPC
