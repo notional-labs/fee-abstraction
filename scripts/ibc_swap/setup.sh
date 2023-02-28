@@ -72,10 +72,10 @@ CROSSCHAIN_SWAPS_ADDRESS=$(osmosisd query wasm list-contract-by-code "$CROSSCHAI
 feeacc=$(feeappd keys show feeacc --keyring-backend test -a)
 balances=$(feeappd query bank balances "$feeacc" -o json | jq '.balances')
 
-MEMO='{"wasm":{"contract":"osmo1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqvlx82r","msg":{"osmosis_swap":{"input_coin":{"denom":"ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878","amount":"25000000"},"output_denom":"uosmo","slippage":{"twap":{"slippage_percentage":"20","window_seconds":10}},"receiver":"feeabs1efd63aw40lxf3n4mhf7dzhjkr453axurwrhrrw","on_failed_delivery":"do_nothing"}}}}'
+MEMO='{"wasm":{"contract":"osmo16zkgfl7hrv8vnxgynfun4wjyk324rpfgx6rzdw0cd3uqut6sa7cscrsdvv","msg":{"osmosis_swap":{"input_coin":{"denom":"uosmo","amount":"73000"},"output_denom":"ibc/E868642C3BADA0A234BC32D84C16C620E3877F11BFD56487B859E99BA06DB03D","slippage":{"twap":{"slippage_percentage":"20","window_seconds":10}},"receiver":"feeabs1efd63aw40lxf3n4mhf7dzhjkr453axurwrhrrw","on_failed_delivery":"do_nothing"}}}}'
 echo $MEMO
 
-feeappd tx ibc-transfer transfer transfer channel-0 osmo1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqvlx82r 25000000stake --from feeacc --keyring-backend test --chain-id feeappd-t1 -y   --memo "$MEMO"
+feeappd tx ibc-transfer transfer transfer channel-0 osmo16zkgfl7hrv8vnxgynfun4wjyk324rpfgx6rzdw0cd3uqut6sa7cscrsdvv 73000ibc/ED07A3391A112B175915CD8FAF43A2DA8E4790EDE12566649D0C2F97716B8518 --from feeacc --keyring-backend test --chain-id feeappd-t1 -y   --memo "$MEMO"
 
 sleep 20  # wait for the roundtrip
 

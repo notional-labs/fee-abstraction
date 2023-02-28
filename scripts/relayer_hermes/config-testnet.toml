@@ -98,9 +98,9 @@ port = 3001
 #osmosis
 [[chains]]
 id = 'osmo-test-4'
-rpc_addr = 'https://rpc.testnet.osmosis.zone:443/'
-grpc_addr = 'https://grpc-test.osmosis.zone:443'
-websocket_addr = 'ws://rpc.testnet.osmosis.zone:443/websocket'	# ws://135.181.59.162:26657/websocket
++rpc_addr = 'https://rpc-osmosis-testnet-4wemggxmufb4bafy-ie.internalendpoints.notional.ventures:443'
++grpc_addr = 'https://grpc-osmosis-testnet-lsmvzkxrncekvgnm-ie.internalendpoints.notional.ventures:443'
++websocket_addr = 'wss://rpc-osmosis-testnet-4wemggxmufb4bafy-ie.internalendpoints.notional.ventures:443/websocket'     # ws://135.181.59.162:26657/websocket
 rpc_timeout = '10s'
 account_prefix = 'osmo'
 key_name = 'alice'
