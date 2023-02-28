@@ -82,8 +82,9 @@ func (m MsgSwapCrossChain) ValidateBasic() error {
 	return nil
 }
 
-func NewMsgSwapCrossChain(fromAddr sdk.AccAddress) *MsgSwapCrossChain {
+func NewMsgSwapCrossChain(fromAddr sdk.AccAddress, ibcDenom string) *MsgSwapCrossChain {
 	return &MsgSwapCrossChain{
 		FromAddress: fromAddr.String(),
+		IbcDenom:    ibcDenom,
 	}
 }
