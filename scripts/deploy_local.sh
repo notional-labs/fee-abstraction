@@ -27,3 +27,4 @@ hermes --config scripts/relayer_hermes/config.toml create channel --a-chain test
 #osmosisd tx gamm create-pool --pool-file scripts/pool.json --from validator1 --keyring-backend=test --home=$HOME/.osmosisd --chain-id testing --yes
 #feeappd tx feeabs interchain-query osmo1ekqk6ms4fqf2mfeazju4pcu3jq93lcdsfl0tah --keyring-backend test --chain-id feeappd-t1 --from feeacc
 #feeappd tx feeabs query-osmosis-twap uatom 1676778631 --keyring-backend test --chain-id feeappd-t1 --from feeacc
+#feeappd tx feeabs swap ibc/ED07A3391A112B175915CD8FAF43A2DA8E4790EDE12566649D0C2F97716B8518 --from feeacc --keyring-backend test --chain-id feeappd-t1 --node http://168.119.91.22:2241 --fees 34106uchau

@@ -212,7 +212,7 @@ func (k Keeper) transferIBCTokenToOsmosisChainWithIBCHookMemo(ctx sdk.Context, h
 		Token:            token,
 		Sender:           moduleAccountAddress.String(),
 		Receiver:         hostChainConfig.CrosschainSwapAddress,
-		TimeoutHeight:    clienttypes.NewHeight(0, 100000000),
+		TimeoutHeight:    clienttypes.NewHeight(4, 100000000),
 		TimeoutTimestamp: uint64(0),
 		Memo:             memo,
 	}
