@@ -95,7 +95,7 @@ func (k Keeper) SendInterchainQuery(
 	destinationPort := sourceChannelEnd.GetCounterparty().GetPortID()
 	destinationChannel := sourceChannelEnd.GetCounterparty().GetChannelID()
 
-	timeoutHeight := clienttypes.NewHeight(0, 100000000)
+	timeoutHeight := clienttypes.NewHeight(4, 100000000)
 	timeoutTimestamp := uint64(0)
 
 	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(sourcePort, sourceChannel))
