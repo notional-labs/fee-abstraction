@@ -110,6 +110,55 @@ message MsgSwapCrossChain {
 
 ### CLI
 
+A user can query and interact with the ``feeabs`` module using the CLI.
+
+#### Query
+
+The ``query`` commands allow users to query ``feeabs`` module state
+
+```
+feeappd query feeabs -h
+```
+
+##### host-chain-config
+
+The ``host-chain-config`` command allow users to query host chain config for a given ibc denom.
+
+```
+feeappd query feeabs host-chain-config [ibc-denom] [flags]
+```
+
+
+##### module-balances
+The ``module-balances`` command allow users to query feeabs module balances.
+```
+feeappd query feeabs module-balances [flags]
+```
+
+##### osmo-arithmetic-twap
+The ``osmo-arithmetic-twap`` command allow users to query Osmosis twap for an ibc denom.
+```
+feeappd query feeabs osmo-arithmetic-twap [ibc-denom] [flags]
+```
+
+#### Transactions
+The ``tx`` commands allow users to interact with the ``feeabs`` module.
+```
+feeappd tx feeabs -h
+```
+
+##### query-osmosis-twap
+The ``query-osmosis-twap`` commands allow users to send an interchain query for Osmosis twap of an ibc denom with a start time.
+```
+feeappd tx feeabs query-osmosis-twap [ibc-denom] [start-time] [flags]
+```
+
+##### swap
+The ``swap`` commands allow users to trigger the process of swap all ibc denom to native token using Osmosis ``ibc hooks`` module and ``swap router`` contract.
+```
+feeappd tx feeabs swap [flags]
+```
+
 ### gRPC
 
 ## Resources
