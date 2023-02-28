@@ -56,14 +56,14 @@ func NewQueryOsmosisTWAPCmd() *cobra.Command {
 
 func NewSwapOverChainCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:  "swap",
-		Args: cobra.ExactArgs(0),
+		Use:  "swap [ibc-denom]",
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
-			msg := types.NewMsgSwapCrossChain(clientCtx.GetFromAddress())
+			msg := types.NewMsgSwapCrossChain(clientCtx.GetFromAddress(), args[0])
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 
 		},

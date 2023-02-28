@@ -95,7 +95,7 @@ func (k Keeper) SendInterchainQuery(
 	destinationPort := sourceChannelEnd.GetCounterparty().GetPortID()
 	destinationChannel := sourceChannelEnd.GetCounterparty().GetChannelID()
 
-	timeoutHeight := clienttypes.NewHeight(0, 100000000)
+	timeoutHeight := clienttypes.ZeroHeight()
 	timeoutTimestamp := uint64(0)
 
 	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(sourcePort, sourceChannel))
@@ -176,7 +176,7 @@ func (k Keeper) transferIBCTokenToHostChainWithMiddlewareMemo(ctx sdk.Context, h
 		Token:            token,
 		Sender:           moduleAccountAddress.String(),
 		Receiver:         hostChainConfig.MiddlewareAddress,
-		TimeoutHeight:    clienttypes.NewHeight(0, 100000000),
+		TimeoutHeight:    clienttypes.ZeroHeight(),
 		TimeoutTimestamp: uint64(0),
 		Memo:             memo,
 	}
@@ -212,7 +212,7 @@ func (k Keeper) transferIBCTokenToOsmosisChainWithIBCHookMemo(ctx sdk.Context, h
 		Token:            token,
 		Sender:           moduleAccountAddress.String(),
 		Receiver:         hostChainConfig.CrosschainSwapAddress,
-		TimeoutHeight:    clienttypes.NewHeight(0, 100000000),
+		TimeoutHeight:    clienttypes.ZeroHeight(),
 		TimeoutTimestamp: uint64(0),
 		Memo:             memo,
 	}
