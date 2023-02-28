@@ -95,9 +95,7 @@ func (k Keeper) SendInterchainQuery(
 	destinationPort := sourceChannelEnd.GetCounterparty().GetPortID()
 	destinationChannel := sourceChannelEnd.GetCounterparty().GetChannelID()
 
-	timeoutHeight := clienttypes.ZeroHeight()
-	timeoutTimestamp := uint64(0)
-
+	timeoutTimestamp := ctx.BlockTime().Add(time.Minute * 5).UnixNano()
 	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(sourcePort, sourceChannel))
 	if !ok {
 		return 0, sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
@@ -112,8 +110,8 @@ func (k Keeper) SendInterchainQuery(
 		sourceChannel,
 		destinationPort,
 		destinationChannel,
-		timeoutHeight,
-		timeoutTimestamp,
+		clienttypes.ZeroHeight(),
+		uint64(timeoutTimestamp),
 	)
 
 	if err := k.channelKeeper.SendPacket(ctx, channelCap, packet); err != nil {
@@ -170,6 +168,8 @@ func (k Keeper) transferIBCTokenToHostChainWithMiddlewareMemo(ctx sdk.Context, h
 		return err
 	}
 
+	timeoutTimestamp := ctx.BlockTime().Add(time.Minute * 5).UnixNano()
+
 	transferMsg := transfertypes.MsgTransfer{
 		SourcePort:       transfertypes.PortID,
 		SourceChannel:    hostChainConfig.IbcTransferChannel,
@@ -177,7 +177,7 @@ func (k Keeper) transferIBCTokenToHostChainWithMiddlewareMemo(ctx sdk.Context, h
 		Sender:           moduleAccountAddress.String(),
 		Receiver:         hostChainConfig.MiddlewareAddress,
 		TimeoutHeight:    clienttypes.ZeroHeight(),
-		TimeoutTimestamp: uint64(0),
+		TimeoutTimestamp: uint64(timeoutTimestamp),
 		Memo:             memo,
 	}
 
@@ -206,6 +206,8 @@ func (k Keeper) transferIBCTokenToOsmosisChainWithIBCHookMemo(ctx sdk.Context, h
 		return err
 	}
 
+	timeoutTimestamp := ctx.BlockTime().Add(time.Minute * 5).UnixNano()
+
 	transferMsg := transfertypes.MsgTransfer{
 		SourcePort:       transfertypes.PortID,
 		SourceChannel:    hostChainConfig.IbcTransferChannel,
@@ -213,7 +215,7 @@ func (k Keeper) transferIBCTokenToOsmosisChainWithIBCHookMemo(ctx sdk.Context, h
 		Sender:           moduleAccountAddress.String(),
 		Receiver:         hostChainConfig.CrosschainSwapAddress,
 		TimeoutHeight:    clienttypes.ZeroHeight(),
-		TimeoutTimestamp: uint64(0),
+		TimeoutTimestamp: uint64(timeoutTimestamp),
 		Memo:             memo,
 	}
 
