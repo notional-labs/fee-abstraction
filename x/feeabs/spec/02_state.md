@@ -11,7 +11,7 @@ It's important to note that the exchange rate will fluctuate over time, as it is
 
 ## HostChainChainConfig
 
-The host chain config for an ibc denom
+The host chain configuration for an IBC denomination is as follows:
 - KeyHostChainChainConfig: `0x03<ibc_denom_bytes> -> HostChainFeeAbsConfig`
 
 ```go
@@ -40,5 +40,3 @@ type HostChainFeeAbsConfig struct {
 ```
 
 
-rpc : http://168.119.91.22:2241
-api:  http://168.119.91.22:1318
