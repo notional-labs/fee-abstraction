@@ -13,8 +13,10 @@ The `Feeabs` module fetches Osmosis [twap](https://github.com/osmosis-labs/osmos
 2. **[State](02_state.md)**
    - [OsmosisTwapExchangeRate](02_state.md#OsmosisTwapExchangeRate)
    - [HostChainChainConfig](02_state.md#HostChainChainConfig)
-3. **[BeginBlock](03_begin_block.md)**
+3. **[Epoch](03_epoch.md)**
 4. **[Events](04_events.md)**
    - [BeginBlocker](04_events.md#BeginBlocker)
    - [IBC](04_events.md#IBC)
 5. **[Parameters](05_params.md)**
+
+## Interagation to 
