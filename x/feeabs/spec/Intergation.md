@@ -99,4 +99,5 @@ app.moduleManager.SetOrderInitGenesis(
 )
 ```
 
-## Configuring with Fee Middleware param and HostZoneConfig
+## Configuring with Fee Abtraction param and HostZoneConfig
+In order to use Fee Abstraction, we need to add the HostZoneConfig as specified in the government proposals.
