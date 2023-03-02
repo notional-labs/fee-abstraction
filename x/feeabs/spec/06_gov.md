@@ -1,10 +1,5 @@
 
 ## HostChainChainConfig
-
-The host chain config for an ibc denom
-
-- KeyHostChainChainConfig: `0x03<ibc_denom_bytes> -> HostChainFeeAbsConfig`
-
 ```go
 type HostChainFeeAbsConfig struct {
  // ibc token is allowed to be used as fee token
