@@ -1,4 +1,4 @@
-# State
+# State 
 
 ## OsmosisTwapExchangeRate
 
@@ -40,4 +40,4 @@ anteDecorators := []sdk.AnteDecorator{
   ibcante.NewAnteDecorator(options.IBCKeeper),
  }
 
-```
+
