@@ -1,5 +1,6 @@
 
 ## HostChainChainConfig
+
 ```go
 type HostChainFeeAbsConfig struct {
  // ibc token is allowed to be used as fee token
@@ -24,3 +25,7 @@ type HostChainFeeAbsConfig struct {
  OsmosisQueryChannel string `protobuf:"bytes,10,opt,name=osmosis_query_channel,json=osmosisQueryChannel,proto3" json:"osmosis_query_channel,omitempty"`
 }
 ```
+
+## Configuring HostZoneConfig
+
+In order to use Fee Abstraction, we need to add the HostZoneConfig as specified in the government proposals.
