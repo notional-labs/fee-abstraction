@@ -42,6 +42,18 @@ type MsgTransfer struct {
 	Memo string
 }
 ```
+
+This message is expected to fail if:
+
+- `SourcePort` is invalid (see [24-host naming requirements](https://github.com/cosmos/ibc/blob/master/spec/core/ics-024-host-requirements/README.md#paths-identifiers-separators).
+- `SourceChannel` is invalid (see [24-host naming requirements](https://github.com/cosmos/ibc/blob/master/spec/core/ics-024-host-requirements/README.md#paths-identifiers-separators)).
+- `Token` is invalid (denom is invalid or amount is negative)
+  - `Token.Amount` is not positive.
+  - `Token.Denom` is not a valid IBC denomination as per [ADR 001 - Coin Source Tracing](../../../docs/architecture/adr-001-coin-source-tracing.md).
+- `Sender` is empty.
+- `Receiver` is empty.
+- `TimeoutHeight` and `TimeoutTimestamp` are both zero.
+
 Feeabs module will send an ibc transfer message with a sepecific data in `Memo` field. This `Memo` field data will be used in Ibc transfer middleware on counterparty chain to swap the amount of ibc token to native token on Osmosis.
 
 There will be 2 separate case that the counterparty chain is Osmosis or not, we will have 2 correspond `Memo`.
