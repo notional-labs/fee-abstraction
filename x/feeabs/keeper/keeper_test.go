@@ -18,27 +18,9 @@ type KeeperTestSuite struct {
 	chainB      *wasmibctesting.TestChain
 	chainC      *wasmibctesting.TestChain
 
-	// ctx          sdk.Context
-	// feeAbsApp    *app.FeeAbs
-	// feeAbsKeeper keeper.Keeper
 	queryClient types.QueryClient
 	msgServer   types.MsgServer
 }
-
-// func (suite *KeeperTestSuite) SetupTest() {
-// 	suite.feeAbsApp = apphelpers.Setup(suite.T(), false, 1)
-// 	suite.ctx = suite.feeAbsApp.BaseApp.NewContext(false, tmproto.Header{
-// 		ChainID: fmt.Sprintf("test-chain-%s", tmrand.Str(4)),
-// 		Height:  1,
-// 	})
-// 	suite.feeAbsKeeper = suite.feeAbsApp.FeeabsKeeper
-
-// 	queryHelper := baseapp.NewQueryServerTestHelper(suite.ctx, suite.feeAbsApp.InterfaceRegistry())
-// 	types.RegisterQueryServer(queryHelper, keeper.NewQuerier(suite.feeAbsKeeper))
-// 	suite.queryClient = types.NewQueryClient(queryHelper)
-
-// 	suite.msgServer = keeper.NewMsgServerImpl(suite.feeAbsKeeper)
-// }
 
 func (suite *KeeperTestSuite) SetupTest() {
 	suite.coordinator = wasmibctesting.NewCoordinator(suite.T(), 3)
