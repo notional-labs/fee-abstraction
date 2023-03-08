@@ -5,6 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/keeper"
 
 	"github.com/CosmWasm/wasmd/app/params"
@@ -70,6 +71,10 @@ func (s TestSupport) FeeAbsKeeper() keeper.Keeper {
 
 func (s TestSupport) GetBaseApp() *baseapp.BaseApp {
 	return s.app.BaseApp
+}
+
+func (s TestSupport) InterfaceRegistry() types.InterfaceRegistry {
+	return s.app.InterfaceRegistry()
 }
 
 func (s TestSupport) GetTxConfig() client.TxConfig {

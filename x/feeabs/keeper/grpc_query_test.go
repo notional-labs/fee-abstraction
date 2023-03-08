@@ -13,7 +13,7 @@ var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 func (suite *KeeperTestSuite) TestOsmosisArithmeticTwap() {
 	suite.SetupTest()
 	twapPrice := sdk.NewDec(1)
-	suite.feeAbsKeeper.SetTwapRate(suite.ctx, "denom", twapPrice)
+	suite.chainA.GetTestSupport().FeeAbsKeeper().SetTwapRate(suite.chainA.GetContext(), "denom", twapPrice)
 
 	for _, tc := range []struct {
 		desc      string
@@ -41,7 +41,7 @@ func (suite *KeeperTestSuite) TestOsmosisArithmeticTwap() {
 	} {
 		tc := tc
 		suite.Run(tc.desc, func() {
-			goCtx := sdk.WrapSDKContext(suite.ctx)
+			goCtx := sdk.WrapSDKContext(suite.chainA.GetContext())
 			if !tc.shouldErr {
 				res, err := suite.queryClient.OsmosisArithmeticTwap(goCtx, tc.req)
 				suite.Require().NoError(err)
@@ -67,7 +67,7 @@ func (suite *KeeperTestSuite) TestHostChainConfig() {
 		PoolId:                     randUint64Num(),
 	}
 
-	err := suite.feeAbsKeeper.SetHostZoneConfig(suite.ctx, chainConfig.IbcDenom, chainConfig)
+	err := suite.chainA.GetTestSupport().FeeAbsKeeper().SetHostZoneConfig(suite.chainA.GetContext(), chainConfig.IbcDenom, chainConfig)
 	suite.Require().NoError(err)
 
 	for _, tc := range []struct {
@@ -99,7 +99,7 @@ func (suite *KeeperTestSuite) TestHostChainConfig() {
 	} {
 		tc := tc
 		suite.Run(tc.desc, func() {
-			goCtx := sdk.WrapSDKContext(suite.ctx)
+			goCtx := sdk.WrapSDKContext(suite.chainA.GetContext())
 			if !tc.shouldErr {
 				res, err := suite.queryClient.HostChainConfig(goCtx, tc.req)
 				suite.Require().NoError(err)
