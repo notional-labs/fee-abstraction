@@ -3,7 +3,6 @@
 set -euo pipefail
 
 make proto-gen
-make run-querygen
 
 #Specificially ignore all differences in go.mod / go.sum.
 if ! git diff --stat --exit-code . ':(exclude)*.mod' ':(exclude)*.sum'; then
