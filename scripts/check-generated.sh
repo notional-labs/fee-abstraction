@@ -3,5 +3,3 @@
 set -euo pipefail
 
 make proto-gen
-
-
