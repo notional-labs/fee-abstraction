@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -231,17 +230,6 @@ func (k Keeper) getQueryArithmeticTwapToNowRequest(
 func (k Keeper) GetChannelId(ctx sdk.Context) string {
 	store := ctx.KVStore(k.storeKey)
 	return string(store.Get(types.KeyChannelID))
-}
-
-// TODO: need to test this function
-func (k Keeper) UnmarshalPacketBytesToICQResponses(bz []byte) (types.IcqRespones, error) {
-	var res types.IcqRespones
-	err := json.Unmarshal(bz, &res)
-	if err != nil {
-		return types.IcqRespones{}, sdkerrors.New("ibc ack data umarshal", 1, err.Error())
-	}
-
-	return res, nil
 }
 
 // TODO: add testing
