@@ -8,6 +8,7 @@ export OWNER=$(osmosisd keys show deployer -a --keyring-backend test )
 echo $OWNER=$(osmosisd keys show deployer -a --keyring-backend test )
 
 hermes --config scripts/relayer_hermes/config.toml create channel --a-chain testing --b-chain feeappd-t1 --a-port transfer --b-port transfer --new-client-connection --yes
+#hermes --config scripts/relayer_hermes/config.toml create channel --a-chain testing --b-chain feeappd-t1 --a-port icqhost --b-port feeabs --new-client-connection --yes
 
 feeappd tx ibc-transfer transfer transfer $CHANNEL_ID "$VALIDATOR" 1000000000000stake --from feeacc --keyring-backend test --chain-id feeappd-t1 --yes
 sleep 20 
@@ -18,7 +19,7 @@ DENOM=$(osmosisd q bank balances "$VALIDATOR" -o json | jq -r '.balances[] | sel
 cat > sample_pool.json <<EOF
 {
         "weights": "1${DENOM},1uosmo",
-        "initial-deposit": "1000000000${DENOM},1000000uosmo",
+        "initial-deposit": "1000000000${DENOM},5000000uosmo",
         "swap-fee": "0.01",
         "exit-fee": "0.01",
         "future-governor": "168h"

@@ -20,6 +20,14 @@ message QueryArithmeticTwapToNowRequest {
 	];
 }
 
+message QueryArithmeticTwapToNowResponse {
+	string arithmetic_twap = 1 [
+	  (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+	  (gogoproto.moretags) = "yaml:\"arithmetic_twap\"",
+	  (gogoproto.nullable) = false
+	];
+}
+
 message InterchainQueryRequest{
 	bytes data = 1;
 	string path = 2;

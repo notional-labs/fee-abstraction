@@ -14,10 +14,6 @@ const (
 	IBCPortID = "feeabs"
 )
 
-type ArithmeticTWAP struct {
-	ArithmeticTWAP string `json:"arithmetic_twap"`
-}
-
 type Result struct {
 	Success bool   `json:"success"`
 	Data    []byte `json:"data"`
