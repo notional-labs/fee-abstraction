@@ -13,6 +13,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	"github.com/notional-labs/feeabstraction/v1/x/feeabs/types"
+	abcitypes "github.com/tendermint/tendermint/abci/types"
 )
 
 // GetPort returns the portID for the module. Used in ExportGenesis.
@@ -57,9 +58,9 @@ func (k Keeper) ClaimCapability(ctx sdk.Context, capability *capabilitytypes.Cap
 func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, twapReqs []types.QueryArithmeticTwapToNowRequest, sourcePort, sourceChannel string) error {
 	path := "/osmosis.twap.v1beta1.Query/ArithmeticTwapToNow" // hard code for now should add to params
 
-	IcqReqs := make([]types.InterchainQueryRequest, len(twapReqs))
+	IcqReqs := make([]abcitypes.RequestQuery, len(twapReqs))
 	for i, req := range twapReqs {
-		IcqReqs[i] = types.InterchainQueryRequest{
+		IcqReqs[i] = abcitypes.RequestQuery{
 			Path: path,
 			Data: k.cdc.MustMarshal(&req),
 		}
@@ -76,7 +77,7 @@ func (k Keeper) SendOsmosisQueryRequest(ctx sdk.Context, twapReqs []types.QueryA
 // Send request for query state over IBC
 func (k Keeper) SendInterchainQuery(
 	ctx sdk.Context,
-	reqs []types.InterchainQueryRequest,
+	reqs []abcitypes.RequestQuery,
 	sourcePort string,
 	sourceChannel string,
 ) (uint64, error) {
@@ -101,10 +102,14 @@ func (k Keeper) SendInterchainQuery(
 		return 0, sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
 	}
 
-	packetData := types.NewInterchainQueryRequestPacket(reqs)
+	data, err := types.SerializeCosmosQuery(reqs)
+	if err != nil {
+		return 0, sdkerrors.Wrap(err, "could not serialize reqs into cosmos query")
+	}
+	icqPacketData := types.NewInterchainQueryPacketData(data, "")
 
 	packet := channeltypes.NewPacket(
-		packetData.GetBytes(),
+		icqPacketData.GetBytes(),
 		sequence,
 		sourcePort,
 		sourceChannel,
