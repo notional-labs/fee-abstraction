@@ -158,20 +158,20 @@ func (k Keeper) OnAcknowledgementPacket(ctx sdk.Context, ack channeltypes.Acknow
 			index++
 
 			if IcqRes.Code != 0 {
-				k.Logger(ctx).Error(fmt.Sprintf("OnAcknowledgementPacket IcqRes.Code %d", IcqRes.Code))
+				k.Logger(ctx).Error(fmt.Sprintf("Failed to send interchain query code %d", IcqRes.Code))
 				err := k.FrozenHostZoneByIBCDenom(ctx, hostZoneConfig.IbcDenom)
 				if err != nil {
-					k.Logger(ctx).Error(fmt.Sprintf("OnAcknowledgementPacket Failed to frozem host zone %s", err.Error()))
+					k.Logger(ctx).Error(fmt.Sprintf("Failed to frozen host zone %s", err.Error()))
 				}
 				return false
 			}
 
 			twapRate, err := k.GetDecTWAPFromBytes(IcqRes.Value)
 			if err != nil {
-				k.Logger(ctx).Error(fmt.Sprintf("OnAcknowledgementPacket GetDecTWAPFromBytes %s", IcqRes.Value))
+				k.Logger(ctx).Error("Failed to get twap")
 				return false
 			}
-			k.Logger(ctx).Info(fmt.Sprintf("OnAcknowledgementPacket TwapRate %v", twapRate))
+			k.Logger(ctx).Info(fmt.Sprintf("TwapRate %v", twapRate))
 			k.SetTwapRate(ctx, hostZoneConfig.IbcDenom, twapRate)
 
 			return false
@@ -240,10 +240,6 @@ func (k Keeper) GetDecTWAPFromBytes(bz []byte) (sdk.Dec, error) {
 		return sdk.Dec{}, sdkerrors.New("arithmeticTwap data umarshal", 1, err.Error())
 	}
 
-	// ibcTokenTwapDec, err := sdk.NewDecFromStr(ibcTokenTwap.ArithmeticTWAP)
-	// if err != nil {
-	// 	return sdk.Dec{}, sdkerrors.New("ibc ack data umarshal", 1, "error when NewDecFromStr")
-	// }
 	return ibcTokenTwap.ArithmeticTwap, nil
 }
 
