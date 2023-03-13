@@ -80,8 +80,10 @@ VALIDATOR1_CONFIG=$HOME/.osmosisd/config/config.toml
 
 # validator1
 sed -i -E 's|allow_duplicate_ip = false|allow_duplicate_ip = true|g' $VALIDATOR1_CONFIG
+sed -i -E 's|tcp://127.0.0.1:26658|tcp://0.0.0.0:26658|g' $VALIDATOR1_CONFIG
+sed -i -E 's|tcp://127.0.0.1:26657|tcp://0.0.0.0:26657|g' $VALIDATOR1_CONFIG
 
 # start all three validators
-osmosisd start 
+osmosisd start
 
 echo "1 Validators are up and running!"
