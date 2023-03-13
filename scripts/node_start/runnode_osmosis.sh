@@ -24,11 +24,11 @@ echo "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor 
 update_genesis '.app_state["staking"]["params"]["bond_denom"]="uosmo"'
 
 # osmo1ekqk6ms4fqf2mfeazju4pcu3jq93lcdsfl0tah
-osmosisd add-genesis-account $(osmosisd keys show alice -a --keyring-backend=test ) 100000000000uosmo,100000000000stake,100000000000uatom,2000000uakt 
-osmosisd add-genesis-account $(osmosisd keys show deployer -a --keyring-backend=test ) 100000000000uosmo,100000000000stake,100000000000uatom,2000000uakt 
+osmosisd add-genesis-account $(osmosisd keys show alice -a --keyring-backend=test ) 1000000000000uosmo,100000000000stake,100000000000uatom,2000000uakt 
+osmosisd add-genesis-account $(osmosisd keys show deployer -a --keyring-backend=test ) 1000000000000uosmo,100000000000stake,100000000000uatom,2000000uakt 
 
 # create validator node with tokens to transfer to the three other nodes
-osmosisd add-genesis-account $(osmosisd keys show validator1 -a --keyring-backend=test ) 100000000000uosmo,100000000000stake,100000000000uatom,2000000uakt 
+osmosisd add-genesis-account $(osmosisd keys show validator1 -a --keyring-backend=test ) 1000000000000uosmo,100000000000stake,100000000000uatom,2000000uakt 
 osmosisd gentx validator1 500000000uosmo --keyring-backend=test  --chain-id=testing
 osmosisd collect-gentxs 
 
