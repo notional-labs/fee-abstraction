@@ -201,7 +201,18 @@ func (am IBCModule) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	// TODO: Resend request if timeout
-	// TODO: emit event
+	chancap := am.keeper.GetCapability(ctx, host.ChannelCapabilityPath(am.keeper.GetPort(ctx), am.keeper.GetChannelId(ctx)))
+	// Resend request if timeout
+	err := am.keeper.OnTimeoutPacket(ctx, chancap, packet) // If there is an error here we should still handle the timeout
+	if err != nil {
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				types.EventTypeTimeout,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+				sdk.NewAttribute(types.AttributeKeyFailureType, "timeout"),
+				sdk.NewAttribute(types.AttributeKeyPacket, string(packet.GetData())),
+			),
+		)
+	}
 	return nil
 }
