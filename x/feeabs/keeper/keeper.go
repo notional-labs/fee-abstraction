@@ -134,6 +134,10 @@ func (k Keeper) OnTimeoutPacket(ctx sdk.Context, chanCap *capabilitytypes.Capabi
 }
 
 func (k Keeper) GetCapability(ctx sdk.Context, name string) *capabilitytypes.Capability {
-	cap, _ := k.scopedKeeper.GetCapability(ctx, name)
+	cap, ok := k.scopedKeeper.GetCapability(ctx, name)
+	if !ok {
+		k.Logger(ctx).Error("Error ErrChannelCapabilityNotFound ")
+		return nil
+	}
 	return cap
 }
