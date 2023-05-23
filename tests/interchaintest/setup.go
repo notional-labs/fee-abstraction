@@ -20,6 +20,10 @@ type QueryHostChainConfigRespone struct {
 	HostChainConfig cosmos.HostChainFeeAbsConfig `protobuf:"bytes,1,opt,name=host_chain_config,json=hostChainConfig,proto3" json:"host_chain_config" yaml:"host_chain_config"`
 }
 
+type QueryOsmosisArithmeticTwapResponse struct {
+	ArithmeticTwap types.Dec `json:"arithmetic_twap"`
+}
+
 const (
 	votingPeriod     = "10s"
 	maxDepositPeriod = "10s"
@@ -28,9 +32,15 @@ const (
 var (
 	FeeabsMainRepo = "ghcr.io/notional-labs/fee-abstraction"
 
+	// feeabsImage = ibc.DockerImage{
+	// 	Repository: "ghcr.io/notional-labs/fee-abstraction-ictest",
+	// 	Version:    "3.0.3-testing-icq",
+	// 	UidGid:     "1025:1025",
+	// }
+
 	feeabsImage = ibc.DockerImage{
-		Repository: "ghcr.io/notional-labs/fee-abstraction-ictest",
-		Version:    "latest",
+		Repository: "ghcr.io/notional-labs/fee-abstraction",
+		Version:    "3.0.3-testing-icq",
 		UidGid:     "1025:1025",
 	}
 
@@ -57,6 +67,7 @@ var (
 	pathFeeabsGaia      = "feeabs-gaia"
 	pathFeeabsOsmosis   = "feeabs-osmosis"
 	pathOsmosisGaia     = "osmosis-gaia"
+	pathIcq             = "feeabs-icqhost"
 	genesisWalletAmount = int64(10_000_000)
 )
 

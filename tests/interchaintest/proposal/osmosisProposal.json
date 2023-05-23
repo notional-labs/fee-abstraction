@@ -1,0 +1,19 @@
+{
+    "title": "Enable Async Icq",
+    "description": "Change params for enable interchain query",
+    "changes": [
+      {
+        "subspace": "interchainquery",
+        "key": "HostEnabled",
+        "value": true
+      },
+	  {
+        "subspace": "interchainquery",
+        "key": "AllowQueries",
+        "value": [
+			"/osmosis.twap.v1beta1.Query/ArithmeticTwapToNow"
+		]
+      }
+    ],
+    "deposit": "5000000000uosmo"
+  }

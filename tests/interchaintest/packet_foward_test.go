@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 	interchaintest "github.com/strangelove-ventures/interchaintest/v4"
 	"github.com/strangelove-ventures/interchaintest/v4/chain/cosmos"
@@ -517,6 +518,342 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		require.Greater(t, balance, int64(1))
 	})
+}
+
+func TestICQTwap(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
+
+	client, network := interchaintest.DockerSetup(t)
+
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+
+	ctx := context.Background()
+
+	// Create chain factory with Feeabs and Gaia
+	numVals := 1
+	numFullNodes := 1
+	gasAdjustment := 2.0
+
+	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
+		{
+			Name:          "feeabs",
+			ChainConfig:   feeabsConfig,
+			NumValidators: &numVals,
+			NumFullNodes:  &numFullNodes,
+		},
+		{
+			Name:    "osmosis",
+			Version: "v15.0.0",
+			ChainConfig: ibc.ChainConfig{
+				GasPrices:      "0.005uosmo",
+				EncodingConfig: osmosisEncoding(),
+				ModifyGenesis:  cosmos.ModifyGenesisProposalTime(votingPeriod, maxDepositPeriod),
+			},
+			GasAdjustment: &gasAdjustment,
+			NumValidators: &numVals,
+			NumFullNodes:  &numFullNodes,
+		},
+	})
+
+	chains, err := cf.Chains(t.Name())
+	require.NoError(t, err)
+
+	feeabs, osmosis := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain)
+
+	r := interchaintest.NewBuiltinRelayerFactory(
+		ibc.CosmosRly,
+		zaptest.NewLogger(t),
+	).Build(t, client, network)
+
+	ic := interchaintest.NewInterchain().
+		AddChain(feeabs).
+		AddChain(osmosis).
+		AddRelayer(r, "relayer").
+		AddLink(interchaintest.InterchainLink{
+			Chain1:  feeabs,
+			Chain2:  osmosis,
+			Relayer: r,
+			Path:    pathFeeabsOsmosis,
+		}).
+		AddLink(interchaintest.InterchainLink{
+			Chain1:  feeabs,
+			Chain2:  osmosis,
+			Relayer: r,
+			Path:    pathIcq,
+		})
+
+	require.NoError(t, ic.Build(ctx, eRep, interchaintest.InterchainBuildOptions{
+		TestName:          t.Name(),
+		Client:            client,
+		NetworkID:         network,
+		BlockDatabaseFile: interchaintest.DefaultBlockDatabaseFilepath(),
+
+		SkipPathCreation: true,
+	}))
+	t.Cleanup(func() {
+		_ = ic.Close()
+	})
+
+	const userFunds = int64(10_000_000_000)
+	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, feeabs, osmosis)
+
+	// rly feeabs-osmo
+	// Generate new path
+	err = r.GeneratePath(ctx, eRep, feeabs.Config().ChainID, osmosis.Config().ChainID, pathFeeabsOsmosis)
+	require.NoError(t, err)
+	// Create client
+	err = r.CreateClients(ctx, eRep, pathFeeabsOsmosis, ibc.DefaultClientOpts())
+	require.NoError(t, err)
+
+	err = testutil.WaitForBlocks(ctx, 5, feeabs, osmosis)
+	require.NoError(t, err)
+
+	// Create connection
+	err = r.CreateConnections(ctx, eRep, pathFeeabsOsmosis)
+	require.NoError(t, err)
+
+	err = testutil.WaitForBlocks(ctx, 5, feeabs, osmosis)
+	require.NoError(t, err)
+	// Create channel
+	err = r.CreateChannel(ctx, eRep, pathFeeabsOsmosis, ibc.CreateChannelOptions{
+		SourcePortName: "transfer",
+		DestPortName:   "transfer",
+		Order:          ibc.Unordered,
+		Version:        "ics20-1",
+	})
+	require.NoError(t, err)
+
+	err = testutil.WaitForBlocks(ctx, 5, feeabs, osmosis)
+	require.NoError(t, err)
+
+	channsFeeabs, err := r.GetChannels(ctx, eRep, feeabs.Config().ChainID)
+	require.NoError(t, err)
+
+	channsOsmosis, err := r.GetChannels(ctx, eRep, osmosis.Config().ChainID)
+	require.NoError(t, err)
+
+	require.Len(t, channsFeeabs, 1)
+	require.Len(t, channsOsmosis, 1)
+
+	channFeeabsOsmosis := channsFeeabs[0]
+	require.NotEmpty(t, channFeeabsOsmosis.ChannelID)
+	channOsmosisFeeabs := channsOsmosis[0]
+	require.NotEmpty(t, channOsmosisFeeabs.ChannelID)
+
+	// rly feeabs - osmo icq
+	// Generate new path
+	err = r.GeneratePath(ctx, eRep, feeabs.Config().ChainID, osmosis.Config().ChainID, pathIcq)
+	require.NoError(t, err)
+	// Create client
+	err = r.CreateClients(ctx, eRep, pathIcq, ibc.DefaultClientOpts())
+	require.NoError(t, err)
+
+	err = testutil.WaitForBlocks(ctx, 5, feeabs, osmosis)
+	require.NoError(t, err)
+
+	// Create connection
+	err = r.CreateConnections(ctx, eRep, pathFeeabsOsmosis)
+	require.NoError(t, err)
+
+	err = testutil.WaitForBlocks(ctx, 5, feeabs, osmosis)
+	require.NoError(t, err)
+	// Create channel
+	err = r.CreateChannel(ctx, eRep, pathFeeabsOsmosis, ibc.CreateChannelOptions{
+		SourcePortName: "feeabs",
+		DestPortName:   "icqhost",
+		Order:          ibc.Unordered,
+		Version:        "icq-1",
+	})
+	require.NoError(t, err)
+
+	err = testutil.WaitForBlocks(ctx, 5, feeabs, osmosis)
+	require.NoError(t, err)
+
+	err = testutil.WaitForBlocks(ctx, 5, feeabs, osmosis)
+	require.NoError(t, err)
+
+	channsFeeabs, err = r.GetChannels(ctx, eRep, feeabs.Config().ChainID)
+	require.NoError(t, err)
+
+	channsOsmosis, err = r.GetChannels(ctx, eRep, osmosis.Config().ChainID)
+	require.NoError(t, err)
+
+	require.Len(t, channsFeeabs, 2)
+	require.Len(t, channsOsmosis, 2)
+
+	var channIcqFeeabsOsmo ibc.ChannelOutput
+	var channIcqOsmoFeeabs ibc.ChannelOutput
+
+	for _, chann := range channsOsmosis {
+		if chann.ChannelID != channOsmosisFeeabs.ChannelID {
+			channIcqOsmoFeeabs = chann
+		}
+	}
+	require.NotEmpty(t, channIcqOsmoFeeabs)
+
+	for _, chann := range channsFeeabs {
+		if chann.ChannelID != channFeeabsOsmosis.ChannelID {
+			channIcqFeeabsOsmo = chann
+		}
+	}
+	require.NotEmpty(t, channIcqFeeabsOsmo)
+
+	fmt.Println("-----------------------------------")
+	fmt.Printf("channFeeabsOsmosis: %s - %s\n", channFeeabsOsmosis.ChannelID, channFeeabsOsmosis.Counterparty.ChannelID)
+	fmt.Printf("channOsmosisFeeabs: %s - %s\n", channOsmosisFeeabs.ChannelID, channOsmosisFeeabs.Counterparty.ChannelID)
+	fmt.Printf("channIcqFeeabsOsmosis: %s - %s\n", channIcqFeeabsOsmo.ChannelID, channIcqFeeabsOsmo.Counterparty.ChannelID)
+	fmt.Printf("channIcqOsmosisFeeabs: %s - %s\n", channIcqOsmoFeeabs.ChannelID, channIcqOsmoFeeabs.Counterparty.ChannelID)
+	fmt.Println("-----------------------------------")
+
+	// Start the relayer on both paths
+	err = r.StartRelayer(ctx, eRep, pathFeeabsOsmosis, pathIcq)
+	require.NoError(t, err)
+
+	t.Cleanup(
+		func() {
+			err := r.StopRelayer(ctx, eRep)
+			if err != nil {
+				t.Logf("an error occured while stopping the relayer: %s", err)
+			}
+		},
+	)
+
+	// Get original account balances
+	feeabsUser, osmosisUser := users[0], users[1]
+	_ = feeabsUser
+	_ = osmosisUser
+
+	const amountToSend = int64(1_000_000_000)
+
+	t.Run("icq-twap", func(t *testing.T) {
+		// send Feeabs stake to Osmosis
+		feeabsHeight, err := feeabs.Height(ctx)
+		require.NoError(t, err)
+		dstAddress := osmosisUser.Bech32Address(osmosis.Config().Bech32Prefix)
+		transfer := ibc.WalletAmount{
+			Address: dstAddress,
+			Denom:   feeabs.Config().Denom,
+			Amount:  amountToSend,
+		}
+
+		tx, err := feeabs.SendIBCTransfer(ctx, channFeeabsOsmosis.ChannelID, feeabsUser.KeyName, transfer, ibc.TransferOptions{})
+		require.NoError(t, err)
+		require.NoError(t, tx.Validate())
+
+		_, err = testutil.PollForAck(ctx, feeabs, feeabsHeight, feeabsHeight+30, tx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, 1, feeabs, osmosis)
+		require.NoError(t, err)
+		// send Osmosis uosmo to Feeabs
+		osmosisHeight, err := osmosis.Height(ctx)
+		require.NoError(t, err)
+		dstAddress = feeabsUser.Bech32Address(feeabs.Config().Bech32Prefix)
+		transfer = ibc.WalletAmount{
+			Address: dstAddress,
+			Denom:   osmosis.Config().Denom,
+			Amount:  amountToSend,
+		}
+
+		tx, err = osmosis.SendIBCTransfer(ctx, channOsmosisFeeabs.ChannelID, osmosisUser.KeyName, transfer, ibc.TransferOptions{})
+		require.NoError(t, err)
+		require.NoError(t, tx.Validate())
+
+		_, err = testutil.PollForAck(ctx, osmosis, osmosisHeight, osmosisHeight+30, tx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, 1, feeabs, osmosis)
+		require.NoError(t, err)
+		// Create pool
+		denomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom(channOsmosisFeeabs.PortID, channOsmosisFeeabs.ChannelID, feeabs.Config().Denom))
+		stakeOnOsmosis := denomTrace.IBCDenom()
+		osmosisUserBalance, err := osmosis.GetBalance(ctx, osmosisUser.Bech32Address(osmosis.Config().Bech32Prefix), stakeOnOsmosis)
+		require.NoError(t, err)
+		require.Equal(t, amountToSend, osmosisUserBalance)
+
+		denomTrace = transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom(channFeeabsOsmosis.PortID, channFeeabsOsmosis.ChannelID, osmosis.Config().Denom))
+		uOsmoOnFeeabs := denomTrace.IBCDenom()
+		feeabsUserBalance, err := feeabs.GetBalance(ctx, feeabsUser.Bech32Address(feeabs.Config().Bech32Prefix), uOsmoOnFeeabs)
+		require.NoError(t, err)
+		require.Equal(t, amountToSend, feeabsUserBalance)
+
+		poolID, err := cosmos.OsmosisCreatePool(osmosis, ctx, osmosisUser.KeyName, cosmos.OsmosisPoolParams{
+			Weights:        fmt.Sprintf("5%s,5%s", stakeOnOsmosis, osmosis.Config().Denom),
+			InitialDeposit: fmt.Sprintf("1000000000%s,1000000000%s", stakeOnOsmosis, osmosis.Config().Denom),
+			SwapFee:        "0.01",
+			ExitFee:        "0",
+			FutureGovernor: "",
+		})
+		require.NoError(t, err)
+		require.Equal(t, poolID, "1")
+		// Send gov to add icq allow list to osmosis that accept for icq
+		current_directory, _ := os.Getwd()
+		param_change_path := path.Join(current_directory, "proposal", "osmosisProposal.json")
+
+		paramTx, err := osmosis.ParamChangeProposal(ctx, osmosisUser.KeyName, param_change_path)
+		require.NoError(t, err, "error submitting param change proposal tx")
+
+		err = osmosis.VoteOnProposalAllValidators(ctx, paramTx.ProposalID, cosmos.ProposalVoteYes)
+		require.NoError(t, err, "failed to submit votes")
+
+		height, _ := osmosis.Height(ctx)
+		_, err = cosmos.PollForProposalStatus(ctx, osmosis, height, height+10, paramTx.ProposalID, cosmos.ProposalStatusPassed)
+		require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
+		// Send gov to add params to feeabs
+		current_directory, _ = os.Getwd()
+		param_change_path = path.Join(current_directory, "proposal", "proposal.json")
+
+		paramTx, err = feeabs.ParamChangeProposal(ctx, feeabsUser.KeyName, param_change_path)
+		require.NoError(t, err, "error submitting param change proposal tx")
+
+		err = feeabs.VoteOnProposalAllValidators(ctx, paramTx.ProposalID, cosmos.ProposalVoteYes)
+		require.NoError(t, err, "failed to submit votes")
+
+		height, _ = feeabs.Height(ctx)
+		_, err = cosmos.PollForProposalStatus(ctx, feeabs, height, height+10, paramTx.ProposalID, cosmos.ProposalStatusPassed)
+		require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
+
+		_, err = cosmos.FeeabsAddHostZoneProposal(feeabs, ctx, feeabsUser.KeyName, "./proposal/host_zone_uosmo.json")
+		require.NoError(t, err)
+
+		err = feeabs.VoteOnProposalAllValidators(ctx, "2", cosmos.ProposalVoteYes)
+		require.NoError(t, err, "failed to submit votes")
+
+		height, _ = feeabs.Height(ctx)
+		_, err = cosmos.PollForProposalStatus(ctx, feeabs, height, height+10, "2", cosmos.ProposalStatusPassed)
+		require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
+		// Query twap
+
+		_, err = QueryFeeabsIbcTokenTwap(feeabs, ctx, uOsmoOnFeeabs)
+		require.Error(t, err) // this is the first time (not have data yet => should error)
+
+		err = cosmos.FeeabsQueryOsmosisTwap(feeabs, ctx, feeabsUser.KeyName, "10")
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, 25, feeabs, osmosis)
+		require.NoError(t, err)
+
+		twap, err := QueryFeeabsIbcTokenTwap(feeabs, ctx, uOsmoOnFeeabs)
+		require.NoError(t, err)
+		notExpectTwap := types.NewDec(0)
+		require.NotEqual(t, notExpectTwap, twap.ArithmeticTwap) // twap should not be 0
+	})
+}
+
+func QueryFeeabsIbcTokenTwap(c *cosmos.CosmosChain, ctx context.Context, ibcDenom string) (*QueryOsmosisArithmeticTwapResponse, error) {
+	cmd := []string{"feeabs", "osmo-arithmetic-twap", ibcDenom}
+	stdout, _, err := c.ExecQuery(ctx, cmd)
+	if err != nil {
+		return &QueryOsmosisArithmeticTwapResponse{}, err
+	}
+
+	var twap QueryOsmosisArithmeticTwapResponse
+	err = json.Unmarshal(stdout, &twap)
+	if err != nil {
+		return &QueryOsmosisArithmeticTwapResponse{}, err
+	}
+
+	return &twap, nil
 }
 
 func QueryFeeabsHostZoneConfig(c *cosmos.CosmosChain, ctx context.Context) (*QueryHostChainConfigRespone, error) {
