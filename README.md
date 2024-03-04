@@ -2,6 +2,7 @@
 
 ## Context
 
+
 The concrete use cases which motivated this module include:
 
 - The desire to use IBC token as transaction fees on any chain instead of having to use native token as fee.
@@ -18,21 +19,13 @@ Fee-abs implementation:
 
 The implememtation also uses Osmosis swap router and async-icq module which are already deployed on Osmosis testnet.
 
-## Prototype
-
 Fee-abs mechanism in a nutshell:
-
- 1. Pulling `twap data` and update exchange rate:
-
-- Periodically pulling `twap data` from osmosis by ibc-ing to `async-icq` module on Osmosis, this `twap data` will update the exchange rate of osmosis to customer chain's native token.
-
- 2. Handling txs with ibc-token fee:
-
-- The exchange rate is used to calculate the amount of ibc-token needed for tx fee allowing users to pay ibc-token for tx fee instead of chain's native token.
-
+ 1. Pulling `twap data` and update exchange rate: 
+ - Periodically pulling `twap data` from osmosis by ibc-ing to `async-icq` module on Osmosis, this `twap data` will update the exchange rate of osmosis to customer chain's native token. 
+ 2. Handling txs with ibc-token fee: 
+ - The exchange rate is used to calculate the amount of ibc-token needed for tx fee allowing users to pay ibc-token for tx fee instead of chain's native token.
  3. Swap accumulated ibc-token fee:
-
-- The collected ibc-token users use for tx fee is periodically swaped back to customer chain's native token using osmosis.
+ - The collected ibc-token users use for tx fee is periodically swaped back to customer chain's native token using osmosis.
 
 We'll goes into all the details now:
 
@@ -59,16 +52,12 @@ Fee-abstraction will use osmosis's Cross chain Swap (XCS) feature to do this. We
 
 ##### How XCS work
 
-###### Reverse With Path-unwinding to get Ibc-token on Osmosis
-
+###### Reverse With Path-unwinding to get Ibc-token on Osmosis:
 - Create a ibc transfer message with a specific MEMO to work with ibc [``packet-forward-middleware``](https://github.com/strangelove-ventures/packet-forward-middleware) which is path-unwinding (an ibc feature that allow to automatic define the path and ibc transfer multiple hop follow the defined path)
 - Ibc transfer the created packet to get the fee Ibc-token on Osmosis
 
 Ex: When you sent STARS on Hub to Osmosis, you will get Osmosis(Hub(STARS)) which is different with STARS on Osmosis Osmosis(STARS). It will reverse back Osmosis(Hub(STARS)) to Osmosis(STARS):
 
-![Diagram of the process of swapping accumulated ibc-tokens fee](https://i.imgur.com/D1wSrMm.png "Diagram of the process of swapping accumulated ibc-tokens fee")
-
-###### Swap Ibc-token
 
 ###### Swap Ibc-token
 
@@ -95,4 +84,16 @@ This repository is branched by the cosmos-sdk versions and ibc-go versions used.
 - SDK v0.45.x
   - branch: release/v4.0.x
   - path: github.com/osmosis-labs/fee-abstraction/v4
+
+=======
+![](https://i.imgur.com/D1wSrMm.png)
+
+###### Swap Ibc-token:
+After reverse the ibc-token, XCS will :
+- Swap with the specific pool (which is defined in the transfer packet from Feeabs-chain) to get Feeabs-chain native-token
+- Transfer back Feeabs-chain native-token to Feeabs module account (will use to pay fee for other transaction)
+
+![](https://i.imgur.com/YKOK8mr.png)
+
+Current version of fee-abstraction working with XCSv2
 
